@@ -1,0 +1,42 @@
+{
+  "name": "policy-server",
+  "version": "1.0.0",
+  "description": "Policy Server implementation",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "build": "npm run clean && npm run build:tsc",
+    "build:tsc": "tsc --sourceMap",
+    "clean": "if [ -d ./dist ]; then find ./dist -mindepth 1 -delete; fi",
+    "start": "node --trace-warnings --experimental-specifier-resolution=node dist/index.js",
+    "start:docker": "./scripts/docker_build_run.sh",
+    "lint": "eslint --ignore-pattern .gitignore  . && npm run type-check",
+    "lint:fix": "eslint --ignore-pattern .gitignore  . --fix",
+    "format": "prettier --parser typescript --ignore-path .gitignore --write '**/*.{js,jsx,ts,tsx}'",
+    "type-check": "tsc --noEmit",
+    "release": "release-it --non-interactive",
+    "changelog": "auto-changelog -p"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "inversify": "^6.1.1",
+    "reflect-metadata": "^0.2.2",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.9.0",
+    "@types/swagger-ui-express": "^4.1.7",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "eslint": "^8.50.0",
+    "eslint-config-oceanprotocol": "^2.0.4",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "eslint-plugin-promise": "^6.6.0",
+    "typescript": "^5.6.3"
+  }
+}
