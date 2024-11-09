@@ -15,7 +15,8 @@ export class WaltIdPassThroughHandler implements IPolicyHandler {
     return policyActionType === 'passthrough'
   }
 
-  execute(requestPayload: PolicyRequestPayload): PolicyRequestResponse {
+  // eslint-disable-next-line require-await
+  async execute(requestPayload: PolicyRequestPayload): Promise<PolicyRequestResponse> {
     throw new Error('not implemented')
   }
 }

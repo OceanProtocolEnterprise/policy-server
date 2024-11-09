@@ -15,7 +15,8 @@ export class WaltIdDownloadHandler implements IPolicyHandler {
     return policyActionType === 'download'
   }
 
-  execute(requestPayload: PolicyRequestPayload): PolicyRequestResponse {
-    return { success: true, message: 'waltId:download', httpStatus: 200 }
+  // eslint-disable-next-line require-await
+  async execute(requestPayload: PolicyRequestPayload): Promise<PolicyRequestResponse> {
+    throw new Error('not implemented')
   }
 }

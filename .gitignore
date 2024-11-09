@@ -139,6 +139,7 @@ typesense-data
 
 # VS CODE
 .vscode
+/.vs/policy-server/FileContentIndex
 
 #performance test
 html-report.html

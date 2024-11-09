@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { AuthType } from '../../../@types/auth'
 import { IPolicyHandler } from '../../../@types/policyHandler.js'
 import {
@@ -15,7 +16,24 @@ export class WaltIdInitializeHandler implements IPolicyHandler {
     return policyActionType === 'initialize'
   }
 
-  execute(requestPayload: PolicyRequestPayload): PolicyRequestResponse {
-    return { success: true, message: 'waltId:initialize', httpStatus: 200 }
+  async execute(requestPayload: PolicyRequestPayload): Promise<PolicyRequestResponse> {
+    const url = `${process.env.WALTID_VERIFIER_URL}/openid4vc/verify`
+
+    // TBD: Temporary hardcoded
+    const body = {
+      request_credentials: [
+        {
+          format: 'jwt_vc_json',
+          type: 'OpenBadgeCredential'
+        }
+      ]
+    }
+    const response = await axios.post(url, body)
+
+    return {
+      success: response.status === 200,
+      message: response.data,
+      httpStatus: response.status
+    }
   }
 }

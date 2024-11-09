@@ -4,5 +4,5 @@ import { PolicyActionType, PolicyRequestPayload, PolicyRequestResponse } from '.
 export interface IPolicyHandler {
   supportAuthType: (authType: AuthType) => boolean
   supportActionType: (policyActionType: PolicyActionType) => boolean
-  execute: (requestPayload: PolicyRequestPayload) => PolicyRequestResponse
+  execute: (requestPayload: PolicyRequestPayload) => Promise<PolicyRequestResponse>
 }

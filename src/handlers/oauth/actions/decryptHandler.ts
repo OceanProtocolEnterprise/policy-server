@@ -15,7 +15,8 @@ export class OauthDecryptHandler implements IPolicyHandler {
     return policyActionType === 'decrypt'
   }
 
-  execute(requestPayload: PolicyRequestPayload): PolicyRequestResponse {
+  // eslint-disable-next-line require-await
+  async execute(requestPayload: PolicyRequestPayload): Promise<PolicyRequestResponse> {
     throw new Error('not implemented')
   }
 }

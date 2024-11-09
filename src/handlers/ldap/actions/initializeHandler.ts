@@ -15,7 +15,8 @@ export class LdapInitializeHandler implements IPolicyHandler {
     return policyActionType === 'initialize'
   }
 
-  execute(requestPayload: PolicyRequestPayload): PolicyRequestResponse {
-    return { success: true, message: 'waltId:initialize', httpStatus: 200 }
+  // eslint-disable-next-line require-await
+  async execute(requestPayload: PolicyRequestPayload): Promise<PolicyRequestResponse> {
+    throw new Error('not implemented')
   }
 }

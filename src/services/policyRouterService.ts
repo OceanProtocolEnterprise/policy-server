@@ -15,10 +15,10 @@ const handlers = container.getAll<IPolicyHandler>(TYPES.IPolicyHandler)
 const handlerSelector = new PolicyHandlerSelector(handlers)
 
 const authType = process.env.AUTH_TYPE || 'waltid'
-export function handlePolicyRequest(
+export async function handlePolicyRequest(
   req: Request<{}, {}, PolicyRequestPayload>,
   res: Response
-): void {
+): Promise<void> {
   console.log('Request body:', req.body)
   const { action, ...rest } = req.body
 
@@ -38,6 +38,6 @@ export function handlePolicyRequest(
   }
 
   const payload: PolicyRequestPayload = { action, ...rest }
-  const response: PolicyRequestResponse = handler.execute(payload)
+  const response: PolicyRequestResponse = await handler.execute(payload)
   res.status(response.httpStatus).json(response)
 }

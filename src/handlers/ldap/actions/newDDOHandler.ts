@@ -15,7 +15,8 @@ export class LdapNewDDOHandler implements IPolicyHandler {
     return policyActionType === 'newDDO'
   }
 
-  execute(requestPayload: PolicyRequestPayload): PolicyRequestResponse {
+  // eslint-disable-next-line require-await
+  async execute(requestPayload: PolicyRequestPayload): Promise<PolicyRequestResponse> {
     throw new Error('not implemented')
   }
 }

@@ -3,11 +3,12 @@ import { router } from './routes/policyRouter.js'
 import swaggerDoc from './docs/swagger.json' assert { type: 'json' }
 import swaggerUi from 'swagger-ui-express'
 import errorHandler from './middleware/errorHandler.js'
+import dotnev from 'dotenv'
 const app = express()
+dotnev.config()
 
 app.use(express.json())
 app.use('/', router)
-
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc))
 app.use(errorHandler)
 const PORT = process.env.PORT || 3000
