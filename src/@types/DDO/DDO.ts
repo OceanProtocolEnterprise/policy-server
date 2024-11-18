@@ -61,7 +61,7 @@ export interface DDO {
   credentials?: Credentials
 
   /**
-   * Describes the event of last metadata exvent
+   * Describes the event of last metadata event
    * @type {Event}
    */
   event?: Event
