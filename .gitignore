@@ -153,3 +153,4 @@ html-report.html
 # databases
 *.sqlite
 databases/*
+/.vs
