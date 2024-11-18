@@ -6,7 +6,8 @@ import {
   PolicyRequestPayload,
   PolicyRequestResponse
 } from '../../../@types/PolicyServer/policyServerTypes'
-// import { DDO } from '../../../@types/DDO/DDO'
+import { DDO } from '../../../@types/DDO/DDO'
+import { buildInvalidRequestMessage } from '../../../utils/validateRequests.js'
 
 export class WaltIdInitializeHandler implements IPolicyHandler {
   supportAuthType(authType: AuthType): boolean {
@@ -18,16 +19,19 @@ export class WaltIdInitializeHandler implements IPolicyHandler {
   }
 
   async execute(requestPayload: PolicyRequestPayload): Promise<PolicyRequestResponse> {
+    if (!requestPayload.ddo.credentials.allow)
+      return buildInvalidRequestMessage(
+        'Request body does not contain ddo.credentials.allow'
+      )
     const url = `${process.env.WALTID_VERIFIER_URL}/openid4vc/verify`
 
-    // const ddo = requestPayload.ddo as DDO
+    const ddo = requestPayload.ddo as DDO
     const body = {
-      request_credentials: [
-        {
-          format: 'jwt_vc_json',
-          type: 'OpenBadgeCredential'
-        }
-      ]
+      vc_policies: requestPayload.policyServer.vc_policies ?? [],
+      request_credentials: ddo.credentials.allow.map((credential: any) => ({
+        format: 'jwt_vc_json',
+        type: credential.type
+      }))
     }
     const response = await axios.post(url, body)
 
