@@ -1,6 +1,6 @@
 import { Container } from 'inversify'
-import { TYPES } from '../../@types/containerTypes.js'
-import { IPolicyHandler } from '../../@types/policyHandler.js'
+import { TYPES } from '../../@types/PolicyServer/containerTypes.js'
+import { IPolicyHandler } from '../../@types/PolicyServer/policyHandler.js'
 import { LdapDecryptHandler } from './actions/decryptHandler.js'
 import { LdapDownloadHandler } from './actions/downloadHandler.js'
 import { LdapEncryptHandler } from './actions/encryptHandler.js'

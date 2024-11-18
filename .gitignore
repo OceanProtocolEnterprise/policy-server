@@ -140,6 +140,7 @@ typesense-data
 # VS CODE
 .vscode
 /.vs/policy-server/FileContentIndex
+/.vs
 
 #performance test
 html-report.html
@@ -153,4 +154,3 @@ html-report.html
 # databases
 *.sqlite
 databases/*
-/.vs

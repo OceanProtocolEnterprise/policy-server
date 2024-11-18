@@ -1,10 +1,11 @@
-import { AuthType } from '../../../@types/auth'
-import { IPolicyHandler } from '../../../@types/policyHandler'
 import {
+  AuthType,
+  IPolicyHandler,
   PolicyActionType,
   PolicyRequestPayload,
   PolicyRequestResponse
-} from '../../../@types/request'
+} from '../../../@types/PolicyServer/policyServerTypes'
+import { buildNotImplementedRequestMessage } from '../../../utils/validateRequests.js'
 
 export class OauthUpdateDDOHandler implements IPolicyHandler {
   supportAuthType(authType: AuthType): boolean {
@@ -17,6 +18,6 @@ export class OauthUpdateDDOHandler implements IPolicyHandler {
 
   // eslint-disable-next-line require-await
   async execute(requestPayload: PolicyRequestPayload): Promise<PolicyRequestResponse> {
-    throw new Error('not implemented')
+    return buildNotImplementedRequestMessage()
   }
 }

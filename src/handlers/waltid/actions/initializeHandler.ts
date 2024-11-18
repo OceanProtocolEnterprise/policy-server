@@ -1,11 +1,12 @@
 import axios from 'axios'
-import { AuthType } from '../../../@types/auth'
-import { IPolicyHandler } from '../../../@types/policyHandler.js'
 import {
+  AuthType,
+  IPolicyHandler,
   PolicyActionType,
   PolicyRequestPayload,
   PolicyRequestResponse
-} from '../../../@types/request'
+} from '../../../@types/PolicyServer/policyServerTypes'
+// import { DDO } from '../../../@types/DDO/DDO'
 
 export class WaltIdInitializeHandler implements IPolicyHandler {
   supportAuthType(authType: AuthType): boolean {
@@ -19,7 +20,7 @@ export class WaltIdInitializeHandler implements IPolicyHandler {
   async execute(requestPayload: PolicyRequestPayload): Promise<PolicyRequestResponse> {
     const url = `${process.env.WALTID_VERIFIER_URL}/openid4vc/verify`
 
-    // TBD: Temporary hardcoded
+    // const ddo = requestPayload.ddo as DDO
     const body = {
       request_credentials: [
         {

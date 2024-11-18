@@ -3,7 +3,9 @@ import { router } from './routes/policyRouter.js'
 import swaggerDoc from './docs/swagger.json' assert { type: 'json' }
 import swaggerUi from 'swagger-ui-express'
 import errorHandler from './middleware/errorHandler.js'
+import dotenv from 'dotenv'
 const app = express()
+dotenv.config()
 
 app.use(express.json())
 app.use('/', router)

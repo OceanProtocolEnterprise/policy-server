@@ -1,6 +1,8 @@
-import { AuthType } from '../@types/auth'
-import { IPolicyHandler } from '../@types/policyHandler'
-import { PolicyActionType } from '../@types/request'
+import {
+  AuthType,
+  IPolicyHandler,
+  PolicyActionType
+} from '../@types/PolicyServer/policyServerTypes'
 
 export class PolicyHandlerSelector {
   private handlers: IPolicyHandler[]

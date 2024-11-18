@@ -1,14 +1,14 @@
 import {
+  AuthType,
+  IPolicyHandler,
   PolicyActionType,
   PolicyRequestPayload,
   PolicyRequestResponse
-} from '../@types/request'
+} from '../@types/PolicyServer/policyServerTypes'
 import { Request, Response } from 'express'
 import { container } from '../handlers/container.js'
-import { IPolicyHandler } from '../@types/policyHandler.js'
-import { AuthType } from '../@types/auth'
 import { PolicyHandlerSelector } from '../handlers/policyHandlerSelector.js'
-import { TYPES } from '../@types/containerTypes.js'
+import { TYPES } from '../@types/PolicyServer/containerTypes.js'
 import 'reflect-metadata'
 
 const handlers = container.getAll<IPolicyHandler>(TYPES.IPolicyHandler)

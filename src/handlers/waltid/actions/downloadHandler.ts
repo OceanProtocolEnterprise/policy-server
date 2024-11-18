@@ -1,10 +1,12 @@
-import { AuthType } from '../../../@types/auth'
-import { IPolicyHandler } from '../../../@types/policyHandler'
+import axios from 'axios'
 import {
+  AuthType,
+  IPolicyHandler,
   PolicyActionType,
   PolicyRequestPayload,
   PolicyRequestResponse
-} from '../../../@types/request'
+} from '../../../@types/PolicyServer/policyServerTypes'
+import { buildInvalidRequestMessage } from '../../../utils/validateRequests.js'
 
 export class WaltIdDownloadHandler implements IPolicyHandler {
   supportAuthType(authType: AuthType): boolean {
@@ -15,8 +17,19 @@ export class WaltIdDownloadHandler implements IPolicyHandler {
     return policyActionType === 'download'
   }
 
-  // eslint-disable-next-line require-await
   async execute(requestPayload: PolicyRequestPayload): Promise<PolicyRequestResponse> {
-    throw new Error('not implemented')
+    if (!requestPayload.policyServer.sessionId)
+      return buildInvalidRequestMessage(
+        'Request body does not contain policyServer.sessionId'
+      )
+
+    const url = `${process.env.WALTID_VERIFIER_URL}/openid4vc/session/${requestPayload.policyServer.sessionId}`
+
+    const response = await axios.get(url)
+    return {
+      success: response.status === 200,
+      message: response.data.message,
+      httpStatus: response.status
+    }
   }
 }
