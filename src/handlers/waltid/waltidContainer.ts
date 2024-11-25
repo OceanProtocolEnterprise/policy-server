@@ -8,6 +8,7 @@ import { WaltIdUpdateDDOHandler } from './actions/updateDDOHandler.js'
 import { WaltIdDecryptHandler } from './actions/decryptHandler.js'
 import { WaltIdEncryptHandler } from './actions/encryptHandler.js'
 import { WaltIdPassThroughHandler } from './actions/passThroughHandler.js'
+import { WaltIdUploadHandler } from './actions/uploadHandler.js'
 
 export function setupWaltIdBindings(container: Container) {
   container
@@ -37,5 +38,9 @@ export function setupWaltIdBindings(container: Container) {
   container
     .bind<IPolicyHandler>(TYPES.IPolicyHandler)
     .to(WaltIdPassThroughHandler)
+    .inSingletonScope()
+  container
+    .bind<IPolicyHandler>(TYPES.IPolicyHandler)
+    .to(WaltIdUploadHandler)
     .inSingletonScope()
 }
