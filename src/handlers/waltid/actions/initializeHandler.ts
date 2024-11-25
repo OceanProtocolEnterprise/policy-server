@@ -6,8 +6,9 @@ import {
   PolicyRequestPayload,
   PolicyRequestResponse
 } from '../../../@types/PolicyServer/policyServerTypes'
-import { DDO } from '../../../@types/DDO/DDO'
 import { buildInvalidRequestMessage } from '../../../utils/validateRequests.js'
+import { parseRequestCredentials } from '../../../utils/credentialParser.js'
+import { randomUUID } from 'crypto'
 
 export class WaltIdInitializeHandler implements IPolicyHandler {
   supportAuthType(authType: AuthType): boolean {
@@ -25,15 +26,11 @@ export class WaltIdInitializeHandler implements IPolicyHandler {
       )
     const url = `${process.env.WALTID_VERIFIER_URL}/openid4vc/verify`
 
-    const ddo = requestPayload.ddo as DDO
-    const body = {
-      vc_policies: requestPayload.policyServer.vc_policies ?? [],
-      request_credentials: ddo.credentials.allow.map((credential: any) => ({
-        format: 'jwt_vc_json',
-        type: credential.type
-      }))
+    const requestCredentialsBody = parseRequestCredentials(requestPayload)
+    const headers = {
+      stateId: randomUUID()
     }
-    const response = await axios.post(url, body)
+    const response = await axios.post(url, requestCredentialsBody, { headers })
 
     return {
       success: response.status === 200,
