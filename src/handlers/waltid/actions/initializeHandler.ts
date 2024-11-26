@@ -20,9 +20,9 @@ export class WaltIdInitializeHandler implements IPolicyHandler {
   }
 
   async execute(requestPayload: PolicyRequestPayload): Promise<PolicyRequestResponse> {
-    if (!requestPayload.ddo.credentials.allow)
+    if (!requestPayload.ddo.credentialSubject)
       return buildInvalidRequestMessage(
-        'Request body does not contain ddo.credentials.allow'
+        'Request body does not contain ddo.credentialSubject'
       )
     const url = `${process.env.WALTID_VERIFIER_URL}/openid4vc/verify`
 

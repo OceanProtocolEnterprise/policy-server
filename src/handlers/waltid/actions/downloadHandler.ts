@@ -28,7 +28,7 @@ export class WaltIdDownloadHandler implements IPolicyHandler {
     const response = await axios.get(url)
     return {
       success: response.status === 200,
-      message: response.data.message,
+      message: response.data,
       httpStatus: response.status
     }
   }
