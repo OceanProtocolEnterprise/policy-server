@@ -6,6 +6,7 @@ export type PolicyActionType =
   | 'encrypt'
   | 'decrypt'
   | 'passthrough'
+  | 'upload'
 
 export type PolicyRequestPayload = {
   action: PolicyActionType
