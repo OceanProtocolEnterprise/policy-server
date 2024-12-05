@@ -11,10 +11,12 @@ export class PolicyHandler {
     const authType = process.env.AUTH_TYPE || 'waltid'
 
     const method = this[action]
-    if (typeof method === 'function') {
-      return await method.call(this, policyRequestPayload)
-    } else {
-      throw new Error(`Action "${action}" does not exist in "${authType}" PolicyHandler`)
-    }
+    if (typeof method === 'function') return await method.call(this, policyRequestPayload)
+    else
+      return {
+        success: false,
+        message: `Action "${action}" does not exist in "${authType}" PolicyHandler`,
+        httpStatus: 404
+      }
   }
 }
