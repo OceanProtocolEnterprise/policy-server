@@ -1,11 +1,30 @@
-import express from 'express'
+import express, { Request, Response } from 'express'
 import swaggerDoc from '../swagger.json' assert { type: 'json' }
 import swaggerUi from 'swagger-ui-express'
-import dotenv from 'dotenv'
-import { handlePolicyRequest } from './services/policyRouterService.js'
 import errorHandler, { asyncHandler } from './utils/middleware.js'
+import { PolicyRequestPayload, PolicyRequestResponse } from './@types/policy'
+import { PolicyHandlerFactory } from './policyHandlerFactory.js'
 const app = express()
-dotenv.config()
+const authType = process.env.AUTH_TYPE || 'waltid'
+async function handlePolicyRequest(
+  req: Request<{}, {}, PolicyRequestPayload>,
+  res: Response
+): Promise<void> {
+  const { action, ...rest } = req.body
+
+  const handler = PolicyHandlerFactory.createPolicyHandler(authType)
+  if (handler == null) {
+    res.status(404).json({
+      success: false,
+      status: 404,
+      message: `Handler for auth type "${authType}" is not found.`
+    })
+  }
+
+  const payload: PolicyRequestPayload = { action, ...rest }
+  const response: PolicyRequestResponse = await handler.execute(payload)
+  res.status(response.httpStatus).json(response)
+}
 
 app.use(express.json())
 app.post('/', asyncHandler(handlePolicyRequest))
