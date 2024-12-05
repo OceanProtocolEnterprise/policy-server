@@ -7,6 +7,7 @@
   "scripts": {
     "build": "npm run clean && npm run build:tsc",
     "build:tsc": "tsc --sourceMap",
+    "build-tests:tsc": "tsc --sourceMap --sourceRoot ./src/test && cp ./src/test/.env.test ./dist/test",
     "clean": "if [ -d ./dist ]; then find ./dist -mindepth 1 -delete; fi",
     "start": "node --trace-warnings --experimental-specifier-resolution=node dist/index.js",
     "start:docker": "./scripts/docker_build_run.sh",
@@ -15,12 +16,15 @@
     "format": "prettier --parser typescript --ignore-path .gitignore --write '**/*.{js,jsx,ts,tsx}'",
     "type-check": "tsc --noEmit",
     "release": "release-it --non-interactive",
-    "changelog": "auto-changelog -p"
+    "changelog": "auto-changelog -p",
+    "mocha": "mocha --node-env=test --config .mocharc.json",
+    "test": "npm run lint && npm run build-tests:tsc && npm run mocha \"./dist/test/*.test.js\""
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "axios": "^1.7.7",
+    "chai-http": "^5.1.1",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
     "inversify": "^6.1.1",
@@ -28,16 +32,23 @@
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
+    "@types/chai": "^5.0.1",
     "@types/express": "^5.0.0",
+    "@types/mocha": "^10.0.10",
     "@types/node": "^22.9.0",
+    "@types/sinon": "^17.0.3",
     "@types/swagger-ui-express": "^4.1.7",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
+    "chai": "^5.1.2",
     "eslint": "^8.50.0",
     "eslint-config-oceanprotocol": "^2.0.4",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
     "eslint-plugin-promise": "^6.6.0",
+    "mocha": "^11.0.1",
+    "sinon": "^19.0.2",
+    "supertest": "^7.0.0",
     "typescript": "^5.6.3"
   }
 }

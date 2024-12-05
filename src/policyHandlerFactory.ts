@@ -12,6 +12,7 @@ export class PolicyHandlerFactory {
 
   static createPolicyHandler(authType: string): PolicyHandler {
     const PolicyHandler = this.registry[authType]
+    if (!PolicyHandler) return null
     return new PolicyHandler()
   }
 }
