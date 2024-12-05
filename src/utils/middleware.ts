@@ -1,6 +1,12 @@
-import { Request, Response, NextFunction } from 'express'
-import { PolicyRequestResponse } from '../@types/PolicyServer/request'
+import { Request, Response, NextFunction, RequestHandler } from 'express'
 import axios, { AxiosError } from 'axios'
+import { PolicyRequestResponse } from '../@types/policy'
+
+export const asyncHandler =
+  (fn: RequestHandler): RequestHandler =>
+  (req: Request, res: Response, next: NextFunction) => {
+    Promise.resolve(fn(req, res, next)).catch(next)
+  }
 
 const errorHandler = (
   err: Error | AxiosError,

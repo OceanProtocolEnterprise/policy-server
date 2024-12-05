@@ -1,14 +1,14 @@
 import express from 'express'
-import { router } from './routes/policyRouter.js'
-import swaggerDoc from './docs/swagger.json' assert { type: 'json' }
+import swaggerDoc from '../swagger.json' assert { type: 'json' }
 import swaggerUi from 'swagger-ui-express'
-import errorHandler from './middleware/errorHandler.js'
 import dotenv from 'dotenv'
+import { handlePolicyRequest } from './services/policyRouterService.js'
+import errorHandler, { asyncHandler } from './utils/middleware.js'
 const app = express()
 dotenv.config()
 
 app.use(express.json())
-app.use('/', router)
+app.post('/', asyncHandler(handlePolicyRequest))
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc))
 app.use(errorHandler)
 const PORT = process.env.PORT || 3000

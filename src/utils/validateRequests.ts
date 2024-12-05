@@ -1,4 +1,4 @@
-import { PolicyRequestResponse } from '../@types/PolicyServer/request'
+import { PolicyRequestResponse } from '../@types/policy'
 
 export function buildInvalidRequestMessage(cause: string): PolicyRequestResponse {
   return {
