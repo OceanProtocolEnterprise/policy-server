@@ -97,6 +97,16 @@
                     "dataNftAddress": "0x123",
                     "policyServer": {}
                   }
+                },
+                "passthrough": {
+                  "summary": "Passthrough action",
+                  "value": {
+                    "action": "passthrough",
+                    "url": "/url",
+                    "httpMethod": "GET",
+                    "body": {},
+                    "policyServer": {}
+                  }
                 }
               }
             }
