@@ -1,0 +1,146 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Policy Server Documentation",
+    "version": "1.0.0",
+    "description": "Policy Server Implementation"
+  },
+  "paths": {
+    "/": {
+      "post": {
+        "summary": "Perform an action",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "enum": [
+                      "newDDO",
+                      "updateDDO",
+                      "initialize",
+                      "download",
+                      "encrypt",
+                      "decrypt",
+                      "passthrough"
+                    ],
+                    "description": "Type of policy action to perform"
+                  },
+                  "additionalProperties": {
+                    "type": "object",
+                    "description": "Additional parameters for the action"
+                  }
+                }
+              },
+              "examples": {
+                "newDDO": {
+                  "summary": "Called whenever a new DDO is detected by indexer",
+                  "value": {
+                    "action": "newDDO",
+                    "rawDDO": {},
+                    "chainId": 1,
+                    "txId": "0x123",
+                    "eventRaw": "raw event data"
+                  }
+                },
+                "updateDDO": {
+                  "summary": "Called whenever a DDO is updated by indexer",
+                  "value": {
+                    "action": "updateDDO",
+                    "rawDDO": {},
+                    "chainId": 1,
+                    "txId": "0x123",
+                    "eventRaw": "raw event data"
+                  }
+                },
+                "initialize": {
+                  "summary": "Called whenever a new initialize command is received by Ocean Node",
+                  "value": {
+                    "action": "initialize",
+                    "documentId": "did:op:123",
+                    "ddo": {},
+                    "serviceId": "0x123",
+                    "consumerAddress": "0x123",
+                    "policyServer": {}
+                  }
+                },
+                "download": {
+                  "summary": "Called whenever a new download command is received by Ocean Node",
+                  "value": {
+                    "action": "download",
+                    "documentId": "did:op:123",
+                    "ddo": {},
+                    "serviceId": "0x123",
+                    "fileIndex": 1,
+                    "transferTxId": "0x123",
+                    "consumerAddress": "0x123",
+                    "policyServer": {}
+                  }
+                },
+                "encrypt": {
+                  "summary": "Called whenever a new encrypt command is received by Ocean Node",
+                  "value": {
+                    "action": "encrypt",
+                    "policyServer": {}
+                  }
+                },
+                "decrypt": {
+                  "summary": "Called whenever a new decrypt command is received by Ocean Node",
+                  "value": {
+                    "action": "decrypt",
+                    "decrypterAddress": "0x123",
+                    "chainId": 1,
+                    "transactionId": "0x123",
+                    "dataNftAddress": "0x123",
+                    "policyServer": {}
+                  }
+                },
+                "passthrough": {
+                  "summary": "Passthrough action",
+                  "value": {
+                    "action": "passthrough",
+                    "url": "/url",
+                    "httpMethod": "GET",
+                    "body": {},
+                    "policyServer": {}
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Response object",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "description": "Indicates whether the request was successful"
+                    },
+                    "message": {
+                      "type": "string",
+                      "nullable": true,
+                      "description": "Optional message about the request status"
+                    },
+                    "httpStatus": {
+                      "type": "integer",
+                      "format": "int32",
+                      "description": "HTTP status code of the response"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
