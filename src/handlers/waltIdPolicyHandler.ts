@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto'
 import { PolicyRequestPayload, PolicyRequestResponse } from '../@types/policy.js'
 import { PolicyHandler } from '../policyHandler.js'
 import { buildInvalidRequestMessage } from '../utils/validateRequests.js'
+
 export class WaltIdPolicyHandler extends PolicyHandler {
   public async initialize(
     requestPayload: PolicyRequestPayload
@@ -37,29 +38,6 @@ export class WaltIdPolicyHandler extends PolicyHandler {
     const url = `${process.env.WALTID_VERIFIER_URL}/openid4vc/session/${requestPayload.policyServer.sessionId}`
 
     const response = await axios.get(url)
-    return {
-      success: response.status === 200,
-      message: response.data,
-      httpStatus: response.status
-    }
-  }
-
-  public async passthrough(
-    requestPayload: PolicyRequestPayload
-  ): Promise<PolicyRequestResponse> {
-    if (!requestPayload.url)
-      return buildInvalidRequestMessage('Request body does not contain url')
-    else if (!requestPayload.httpMethod) {
-      return buildInvalidRequestMessage('Request body does not contain httpMethod')
-    }
-    const payloadUrl = requestPayload.url.trimStart('/')
-    const url = `${process.env.WALTID_VERIFIER_URL}/${payloadUrl}`
-    const requestConfig = {
-      method: requestPayload.httpMethod.toLowerCase(),
-      url,
-      data: requestPayload.body
-    }
-    const response = await axios(requestConfig)
     return {
       success: response.status === 200,
       message: response.data,
