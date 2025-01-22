@@ -19,12 +19,10 @@
                   "action": {
                     "type": "string",
                     "enum": [
-                      "newDDO",
-                      "updateDDO",
-                      "initialize",
+                      "initiate",
                       "download",
-                      "encrypt",
-                      "decrypt",
+                      "checkSessionId",
+                      "presentationRequest",
                       "passthrough"
                     ],
                     "description": "Type of policy action to perform"
@@ -36,39 +34,130 @@
                 }
               },
               "examples": {
-                "newDDO": {
-                  "summary": "Called whenever a new DDO is detected by indexer",
+                "initiate": {
+                  "summary": "Initiate action, returns presentation_uri including session_id",
                   "value": {
-                    "action": "newDDO",
-                    "rawDDO": {},
-                    "chainId": 1,
-                    "txId": "0x123",
-                    "eventRaw": "raw event data"
-                  }
-                },
-                "updateDDO": {
-                  "summary": "Called whenever a DDO is updated by indexer",
-                  "value": {
-                    "action": "updateDDO",
-                    "rawDDO": {},
-                    "chainId": 1,
-                    "txId": "0x123",
-                    "eventRaw": "raw event data"
-                  }
-                },
-                "initialize": {
-                  "summary": "Called whenever a new initialize command is received by Ocean Node",
-                  "value": {
-                    "action": "initialize",
+                    "action": "initiate",
                     "documentId": "did:op:123",
-                    "ddo": {},
+                    "ddo": {
+                      "credentialSubject": {
+                        "credentials": [
+                          {
+                            "allow": [
+                              {
+                                "vpPolicies": [
+                                  "signature",
+                                  "expired"
+                                ],
+                                "vcPolicies": [
+                                  "signature",
+                                  "expired"
+                                ],
+                                "requestCredentials": [
+                                  {
+                                    "type": "VerifiableId",
+                                    "format": "jwt_vc_json"
+                                  },
+                                  {
+                                    "type": "ProofOfResidence",
+                                    "format": "jwt_vc_json"
+                                  },
+                                  {
+                                    "type": "OpenBadgeCredential",
+                                    "format": "jwt_vc_json",
+                                    "policies": [
+                                      "signature",
+                                      {
+                                        "policy": "webhook",
+                                        "args": "https://example.org/abc/xyz"
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ],
+                        "services": [
+                          {
+                            "credentials": [
+                              {
+                                "allow": [
+                                  {
+                                    "vpPolicies": [
+                                      "signature",
+                                      "expired"
+                                    ],
+                                    "vcPolicies": [
+                                      "signature",
+                                      "expired"
+                                    ],
+                                    "requestCredentials": [
+                                      {
+                                        "type": "VerifiableId",
+                                        "format": "jwt_vc_json"
+                                      },
+                                      {
+                                        "type": "ProofOfResidence",
+                                        "format": "jwt_vc_json"
+                                      },
+                                      {
+                                        "type": "OpenBadgeCredential",
+                                        "format": "jwt_vc_json",
+                                        "policies": [
+                                          "signature",
+                                          {
+                                            "policy": "webhook",
+                                            "args": "https://example.org/abc/xyz"
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    },
                     "serviceId": "0x123",
                     "consumerAddress": "0x123",
                     "policyServer": {}
                   }
                 },
+                "checkSessionId": {
+                  "summary": "Check Session Id action, returns presentation state object",
+                  "value": {
+                    "action": "checkSessionId",
+                    "documentId": "did:op:123",
+                    "ddo": {},
+                    "serviceId": "0x123",
+                    "fileIndex": 1,
+                    "transferTxId": "0x123",
+                    "consumerAddress": "0x123",
+                    "policyServer": {
+                      "sessionId": ""
+                    }
+                  }
+                },
+                "presentationRequest": {
+                  "summary": "Presentation Request action, fulfills presentation request",
+                  "value": {
+                    "action": "presentationRequest",
+                    "documentId": "did:op:123",
+                    "ddo": {},
+                    "serviceId": "0x123",
+                    "fileIndex": 1,
+                    "transferTxId": "0x123",
+                    "consumerAddress": "0x123",
+                    "policyServer": {
+                      "sessionId": ""
+                    }
+                  }
+                },
                 "download": {
-                  "summary": "Called whenever a new download command is received by Ocean Node",
+                  "summary": "Download action, returns verification result",
                   "value": {
                     "action": "download",
                     "documentId": "did:op:123",
@@ -77,25 +166,12 @@
                     "fileIndex": 1,
                     "transferTxId": "0x123",
                     "consumerAddress": "0x123",
-                    "policyServer": {}
-                  }
-                },
-                "encrypt": {
-                  "summary": "Called whenever a new encrypt command is received by Ocean Node",
-                  "value": {
-                    "action": "encrypt",
-                    "policyServer": {}
-                  }
-                },
-                "decrypt": {
-                  "summary": "Called whenever a new decrypt command is received by Ocean Node",
-                  "value": {
-                    "action": "decrypt",
-                    "decrypterAddress": "0x123",
-                    "chainId": 1,
-                    "transactionId": "0x123",
-                    "dataNftAddress": "0x123",
-                    "policyServer": {}
+                    "policyServer": {
+                      "sessionId": "",
+                      "vp_token": null,
+                      "response": null,
+                      "presentation_submission": null
+                    }
                   }
                 },
                 "passthrough": {

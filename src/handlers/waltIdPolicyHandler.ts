@@ -4,7 +4,7 @@ import { PolicyRequestPayload, PolicyRequestResponse } from '../@types/policy.js
 import { PolicyHandler } from '../policyHandler.js'
 import { buildInvalidRequestMessage } from '../utils/validateRequests.js'
 export class WaltIdPolicyHandler extends PolicyHandler {
-  public async initialize(
+  public async initiate(
     requestPayload: PolicyRequestPayload
   ): Promise<PolicyRequestResponse> {
     if (!requestPayload.ddo.credentialSubject)
@@ -26,7 +26,46 @@ export class WaltIdPolicyHandler extends PolicyHandler {
     }
   }
 
-  public async download(
+  public async presentationRequest(
+    requestPayload: PolicyRequestPayload
+  ): Promise<PolicyRequestResponse> {
+    if (!requestPayload.policyServer.sessionId)
+      return buildInvalidRequestMessage(
+        'Request body does not contain policyServer.sessionId'
+      )
+
+    if (!requestPayload.policyServer.vp_token)
+      return buildInvalidRequestMessage(
+        'Request body does not contain policyServer.vp_token'
+      )
+
+    if (!requestPayload.policyServer.response)
+      return buildInvalidRequestMessage(
+        'Request body does not contain policyServer.response'
+      )
+
+    if (!requestPayload.policyServer.presentation_submission)
+      return buildInvalidRequestMessage(
+        'Request body does not contain policyServer.presentation_submission'
+      )
+
+    const url = `${process.env.WALTID_VERIFIER_URL}/openid4vc/verify/${requestPayload.policyServer.sessionId}`
+
+    const requestBody = {
+      vp_token: requestPayload.policyServer.vp_token,
+      response: requestPayload.policyServer.response,
+      presentation_submission: requestPayload.policyServer.presentation_submission
+    }
+
+    const response = await axios.post(url, requestBody)
+    return {
+      success: response.status === 200,
+      message: response.data,
+      httpStatus: response.status
+    }
+  }
+
+  public async checkSessionId(
     requestPayload: PolicyRequestPayload
   ): Promise<PolicyRequestResponse> {
     if (!requestPayload.policyServer.sessionId)
@@ -39,6 +78,24 @@ export class WaltIdPolicyHandler extends PolicyHandler {
     const response = await axios.get(url)
     return {
       success: response.status === 200,
+      message: response.data,
+      httpStatus: response.status
+    }
+  }
+
+  public async download(
+    requestPayload: PolicyRequestPayload
+  ): Promise<PolicyRequestResponse> {
+    if (!requestPayload.policyServer.sessionId)
+      return buildInvalidRequestMessage(
+        'Request body does not contain policyServer.sessionId'
+      )
+
+    const url = `${process.env.WALTID_VERIFIER_URL}/openid4vc/session/${requestPayload.policyServer.sessionId}`
+
+    const response = await axios.get(url)
+    return {
+      success: response.status === 200 && response.data.verificationResult,
       message: response.data,
       httpStatus: response.status
     }
