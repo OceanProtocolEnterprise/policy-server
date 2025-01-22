@@ -38,7 +38,6 @@
                   "summary": "Initiate action, returns presentation_uri including session_id",
                   "value": {
                     "action": "initiate",
-                    "documentId": "did:op:123",
                     "ddo": {
                       "credentialSubject": {
                         "credentials": [
@@ -121,8 +120,6 @@
                         ]
                       }
                     },
-                    "serviceId": "0x123",
-                    "consumerAddress": "0x123",
                     "policyServer": {}
                   }
                 },
@@ -130,12 +127,6 @@
                   "summary": "Check Session Id action, returns presentation state object",
                   "value": {
                     "action": "checkSessionId",
-                    "documentId": "did:op:123",
-                    "ddo": {},
-                    "serviceId": "0x123",
-                    "fileIndex": 1,
-                    "transferTxId": "0x123",
-                    "consumerAddress": "0x123",
                     "policyServer": {
                       "sessionId": ""
                     }
@@ -145,14 +136,11 @@
                   "summary": "Presentation Request action, fulfills presentation request",
                   "value": {
                     "action": "presentationRequest",
-                    "documentId": "did:op:123",
-                    "ddo": {},
-                    "serviceId": "0x123",
-                    "fileIndex": 1,
-                    "transferTxId": "0x123",
-                    "consumerAddress": "0x123",
                     "policyServer": {
-                      "sessionId": ""
+                      "sessionId": "",
+                      "vp_token": null,
+                      "response": null,
+                      "presentation_submission": null
                     }
                   }
                 },
@@ -160,17 +148,8 @@
                   "summary": "Download action, returns verification result",
                   "value": {
                     "action": "download",
-                    "documentId": "did:op:123",
-                    "ddo": {},
-                    "serviceId": "0x123",
-                    "fileIndex": 1,
-                    "transferTxId": "0x123",
-                    "consumerAddress": "0x123",
                     "policyServer": {
-                      "sessionId": "",
-                      "vp_token": null,
-                      "response": null,
-                      "presentation_submission": null
+                      "sessionId": ""
                     }
                   }
                 },
