@@ -15,7 +15,8 @@ export class WaltIdPolicyHandler extends PolicyHandler {
 
     const requestCredentialsBody = this.parseRequestCredentials(requestPayload)
     const headers = {
-      stateId: randomUUID()
+      stateId: randomUUID(),
+      successRedirectUri: process.env.WALTID_SUCCESS_REDIRECT_URL || ''
     }
     const response = await axios.post(url, requestCredentialsBody, { headers })
 
@@ -58,11 +59,23 @@ export class WaltIdPolicyHandler extends PolicyHandler {
     }
 
     const response = await axios.post(url, requestBody)
+    const success =
+      !process.env.WALTID_SUCCESS_REDIRECT_URL ||
+      (response.data.redirect_uri &&
+        this.verifySuccessRedirectUri(
+          response.data.redirect_uri,
+          requestPayload.policyServer.sessionId
+        ))
     return {
-      success: response.status === 200,
+      success: response.status === 200 && success,
       message: response.data,
       httpStatus: response.status
     }
+  }
+
+  verifySuccessRedirectUri(redirectUri: string, sessionId: string): boolean {
+    const expectedUri = process.env.WALTID_SUCCESS_REDIRECT_URL.replace('$id', sessionId)
+    return decodeURIComponent(redirectUri) === expectedUri
   }
 
   public async checkSessionId(
