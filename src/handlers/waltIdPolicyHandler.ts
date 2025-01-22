@@ -90,7 +90,7 @@ export class WaltIdPolicyHandler extends PolicyHandler {
 
     const response = await axios.get(url)
     return {
-      success: response.status === 200,
+      success: response.status === 200 && response.data.verificationResult,
       message: response.data,
       httpStatus: response.status
     }
