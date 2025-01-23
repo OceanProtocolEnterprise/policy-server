@@ -1,0 +1,117 @@
+name: 'CI'
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - '**'
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 'v20.16.0'
+      - name: Cache node_modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-lint-cache-node-modules-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-lint-cache-node-modules-
+      - run: npm ci
+      - run: npm run lint
+
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        node: ['18.20.4', 'v20.16.0', 'v22.5.1']
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Cache node_modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-${{ matrix.node }}-build-cache-node-modules-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-${{ matrix.node }}-build-cache-node-modules-
+      - run: npm ci
+      - run: npm run build
+
+  test_unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 'v20.16.0'
+      - name: Cache node_modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-test-unit-cache-node-modules-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-test-unit-cache-node-modules-
+      - run: npm ci
+      - run: npm run test
+        env:
+          AUTH_TYPE: "waltid"
+          WALTID_VERIFIER_URL: "https://verifier.portal.walt.id"
+          DEFAULT_VP_POLICIES: '["expired","signature","revoked-status-list","not-before"]'
+          DEFAULT_VC_POLICIES: '["expired","signature","revoked-status-list","not-before"]'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/
+  test_system:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'v20.16.0'
+
+      - name: Cache node_modules
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-test-integration-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: ${{ runner.os }}-test-integration-${{ env.cache-name }}-
+      - name: Start Policy Server
+        working-directory: ${{ github.workspace }}
+        run: |
+          npm ci
+          npm run build
+          npm run start &
+        env:
+          AUTH_TYPE: "waltid"
+          WALTID_VERIFIER_URL: "https://verifier.portal.walt.id"
+          DEFAULT_VP_POLICIES: '["expired","signature","revoked-status-list","not-before"]'
+          DEFAULT_VC_POLICIES: '["expired","signature","revoked-status-list","not-before"]'
+      - name: Check Policy Server is running
+        run: |
+         for i in $(seq 1 90); do
+          if curl --output /dev/null --silent --head --fail "http://localhost:3000/api-docs"; then
+            echo "Policy Server is up"
+            exit 0
+          fi
+          sleep 10
+          done
+          echo "Policy Server did not start in time"
+          exit 1
