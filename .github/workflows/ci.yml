@@ -63,7 +63,7 @@ jobs:
           key: ${{ runner.os }}-test-unit-cache-node-modules-${{ hashFiles('**/package-lock.json') }}
           restore-keys: ${{ runner.os }}-test-unit-cache-node-modules-
       - run: npm ci
-      - run: npm run test
+      - run: npm run test:unit
         env:
           AUTH_TYPE: "waltid"
           WALTID_VERIFIER_URL: "https://verifier.portal.walt.id"
