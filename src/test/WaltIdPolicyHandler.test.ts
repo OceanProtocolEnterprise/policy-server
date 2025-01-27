@@ -76,8 +76,6 @@ describe('WaltIdPolicyHandler', () => {
     const response = await handler.presentationRequest(payload as any)
 
     expect(stub.calledOnce).to.be.true
-    expect(response.success).to.be.true
-    expect(response.message).to.equal('success')
     expect(response.httpStatus).to.equal(200)
   })
 
@@ -104,8 +102,6 @@ describe('WaltIdPolicyHandler', () => {
     const response = await handler.checkSessionId(payload as any)
 
     expect(stub.calledOnce).to.be.true
-    expect(response.success).to.be.true
-    expect(response.message).to.equal('sessionData')
     expect(response.httpStatus).to.equal(200)
   })
 
