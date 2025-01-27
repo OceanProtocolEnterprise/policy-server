@@ -11,18 +11,31 @@ export class WaltIdPolicyHandler extends PolicyHandler {
       return buildInvalidRequestMessage(
         'Request body does not contain ddo.credentialSubject'
       )
-    const url = `${process.env.WALTID_VERIFIER_URL}/openid4vc/verify`
+
+    const url = new URL(`/openid4vc/verify`, process.env.WALTID_VERIFIER_URL)
 
     const requestCredentialsBody = this.parseRequestCredentials(requestPayload)
+    const uuid = randomUUID()
+
     const headers = {
-      stateId: randomUUID(),
+      stateId: uuid,
       successRedirectUri: process.env.WALTID_SUCCESS_REDIRECT_URL || ''
     }
-    const response = await axios.post(url, requestCredentialsBody, { headers })
+
+    const response = await axios.post(url.toString(), requestCredentialsBody, { headers })
+
+    const redirectUrl = process.env.WALTID_VERIFY_RESPONSE_REDIRECT_URL.replace(
+      '$id',
+      uuid
+    )
+    const updatedResponseData = response.data.replace(
+      /response_uri=([^&]*)/,
+      `response_uri=${encodeURIComponent(redirectUrl)}`
+    )
 
     return {
       success: response.status === 200,
-      message: response.data,
+      message: updatedResponseData,
       httpStatus: response.status
     }
   }
@@ -50,7 +63,10 @@ export class WaltIdPolicyHandler extends PolicyHandler {
         'Request body does not contain policyServer.presentation_submission'
       )
 
-    const url = `${process.env.WALTID_VERIFIER_URL}/openid4vc/verify/${requestPayload.policyServer.sessionId}`
+    const url = new URL(
+      `/openid4vc/verify/${requestPayload.policyServer.sessionId}`,
+      process.env.WALTID_VERIFIER_URL
+    )
 
     const requestBody = {
       vp_token: requestPayload.policyServer.vp_token,
@@ -58,7 +74,7 @@ export class WaltIdPolicyHandler extends PolicyHandler {
       presentation_submission: requestPayload.policyServer.presentation_submission
     }
 
-    const response = await axios.post(url, requestBody)
+    const response = await axios.post(url.toString(), requestBody)
     const success =
       !process.env.WALTID_SUCCESS_REDIRECT_URL ||
       (response.data.redirect_uri &&
@@ -86,9 +102,12 @@ export class WaltIdPolicyHandler extends PolicyHandler {
         'Request body does not contain policyServer.sessionId'
       )
 
-    const url = `${process.env.WALTID_VERIFIER_URL}/openid4vc/session/${requestPayload.policyServer.sessionId}`
+    const url = new URL(
+      `/openid4vc/session/${requestPayload.policyServer.sessionId}`,
+      process.env.WALTID_VERIFIER_URL
+    )
 
-    const response = await axios.get(url)
+    const response = await axios.get(url.toString())
     return {
       success: response.status === 200 && response.data.verificationResult,
       message: response.data,
@@ -104,9 +123,12 @@ export class WaltIdPolicyHandler extends PolicyHandler {
         'Request body does not contain policyServer.sessionId'
       )
 
-    const url = `${process.env.WALTID_VERIFIER_URL}/openid4vc/session/${requestPayload.policyServer.sessionId}`
+    const url = new URL(
+      `/openid4vc/session/${requestPayload.policyServer.sessionId}`,
+      process.env.WALTID_VERIFIER_URL
+    )
 
-    const response = await axios.get(url)
+    const response = await axios.get(url.toString())
     return {
       success: response.status === 200 && response.data.verificationResult,
       message: response.data,
@@ -123,7 +145,8 @@ export class WaltIdPolicyHandler extends PolicyHandler {
       return buildInvalidRequestMessage('Request body does not contain httpMethod')
     }
     const payloadUrl = requestPayload.url.trimStart('/')
-    const url = `${process.env.WALTID_VERIFIER_URL}/${payloadUrl}`
+
+    const url = new URL(`/${payloadUrl}`, process.env.WALTID_VERIFIER_URL).toString()
     const requestConfig = {
       method: requestPayload.httpMethod.toLowerCase(),
       url,

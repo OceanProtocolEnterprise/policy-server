@@ -187,6 +187,8 @@ Policy Server will always add default VP and VC policies, if they are specified 
 
 ```
 In this case `state=ec64a21c-3d81-44f9-8b1d-099c1ec0c7b6` represents Session Id.
+Also, Policy Server replace default `response_uri` by `WALTID_VERIFY_RESPONSE_REDIRECT_URL` env variable, 
+ex. `https://verifier.portal.walt.id/openid4vc/verify/$id`where $id represents the session id.
 
 
 ## 2) presentationRequest
