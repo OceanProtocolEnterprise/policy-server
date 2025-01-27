@@ -67,6 +67,8 @@ jobs:
         env:
           AUTH_TYPE: "waltid"
           WALTID_VERIFIER_URL: "https://verifier.portal.walt.id"
+          WALTID_SUCCESS_REDIRECT_URL: "https://example.com/success?id=$id"
+          WALTID_VERIFY_RESPONSE_REDIRECT_URL: "https://verifier.portal.walt.id/openid4vc/verify/$id"
           DEFAULT_VP_POLICIES: '["expired","signature","revoked-status-list","not-before"]'
           DEFAULT_VC_POLICIES: '["expired","signature","revoked-status-list","not-before"]'
       - uses: actions/upload-artifact@v4
@@ -102,6 +104,8 @@ jobs:
         env:
           AUTH_TYPE: "waltid"
           WALTID_VERIFIER_URL: "https://verifier.portal.walt.id"
+          WALTID_SUCCESS_REDIRECT_URL: "https://example.com/success?id=$id"
+          WALTID_VERIFY_RESPONSE_REDIRECT_URL: "https://verifier.portal.walt.id/openid4vc/verify/$id"
           DEFAULT_VP_POLICIES: '["expired","signature","revoked-status-list","not-before"]'
           DEFAULT_VC_POLICIES: '["expired","signature","revoked-status-list","not-before"]'
       - name: Check Policy Server is running
