@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import axios from 'axios'
 import { randomUUID } from 'crypto'
 import { PolicyRequestPayload, PolicyRequestResponse } from '../@types/policy.js'
@@ -14,7 +15,7 @@ export class WaltIdPolicyHandler extends PolicyHandler {
 
     const url = new URL(`/openid4vc/verify`, process.env.WALTID_VERIFIER_URL)
 
-    const requestCredentialsBody = this.parseRequestCredentials(requestPayload)
+    const requestCredentialsBody = this.parserequest_credentials(requestPayload)
     const uuid = randomUUID()
 
     const headers = {
@@ -160,7 +161,7 @@ export class WaltIdPolicyHandler extends PolicyHandler {
     }
   }
 
-  private parseRequestCredentials(requestPayload: any): any {
+  private parserequest_credentials(requestPayload: any): any {
     const credentialSubject = requestPayload?.ddo?.credentialSubject
 
     const credentialSubjectCredentials =
@@ -183,39 +184,39 @@ export class WaltIdPolicyHandler extends PolicyHandler {
     const combinedCredentials = [
       ...new Set([...credentialSubjectCredentials, ...serviceCredentials])
     ]
-    const vpPolicies = new Set<string>()
-    const vcPolicies = new Set<string>()
+    const vp_policies = new Set<string>()
+    const vc_policies = new Set<string>()
 
-    const envVpPolicies = process.env.DEFAULT_VP_POLICIES
+    const envvp_policies = process.env.DEFAULT_VP_POLICIES
       ? JSON.parse(process.env.DEFAULT_VP_POLICIES)
       : []
-    const envVcPolicies = process.env.DEFAULT_VC_POLICIES
+    const envvc_policies = process.env.DEFAULT_VC_POLICIES
       ? JSON.parse(process.env.DEFAULT_VC_POLICIES)
       : []
 
-    if (Array.isArray(envVpPolicies))
-      envVpPolicies.forEach((policy: string) => vpPolicies.add(policy))
+    if (Array.isArray(envvp_policies))
+      envvp_policies.forEach((policy: string) => vp_policies.add(policy))
 
-    if (Array.isArray(envVcPolicies))
-      envVcPolicies.forEach((policy: string) => vcPolicies.add(policy))
+    if (Array.isArray(envvc_policies))
+      envvc_policies.forEach((policy: string) => vc_policies.add(policy))
 
-    const requestCredentialsMap = new Map<string, any>()
+    const request_credentialsMap = new Map<string, any>()
 
     combinedCredentials.forEach((entry: any) => {
-      if (entry.vpPolicies)
-        entry.vpPolicies.forEach((policy: string) => vpPolicies.add(policy))
-      if (entry.vcPolicies)
-        entry.vcPolicies.forEach((policy: string) => vcPolicies.add(policy))
+      if (entry.vp_policies)
+        entry.vp_policies.forEach((policy: string) => vp_policies.add(policy))
+      if (entry.vc_policies)
+        entry.vc_policies.forEach((policy: string) => vc_policies.add(policy))
 
-      entry.requestCredentials.forEach((credentialRequest: any) => {
+      entry.request_credentials.forEach((credentialRequest: any) => {
         const uniqueKey = JSON.stringify({
           type: credentialRequest.type,
           format: credentialRequest.format,
           policies: credentialRequest.policies
         })
 
-        if (!requestCredentialsMap.has(uniqueKey)) {
-          requestCredentialsMap.set(uniqueKey, {
+        if (!request_credentialsMap.has(uniqueKey)) {
+          request_credentialsMap.set(uniqueKey, {
             type: credentialRequest.type,
             format: credentialRequest.format,
             policies: credentialRequest.policies
@@ -238,9 +239,9 @@ export class WaltIdPolicyHandler extends PolicyHandler {
     })
 
     return {
-      vp_policies: Array.from(vpPolicies),
-      vc_policies: Array.from(vcPolicies),
-      request_credentials: Array.from(requestCredentialsMap.values())
+      vp_policies: Array.from(vp_policies),
+      vc_policies: Array.from(vc_policies),
+      request_credentials: Array.from(request_credentialsMap.values())
     }
   }
 }

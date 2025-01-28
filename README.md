@@ -47,15 +47,15 @@ DEFAULT_VC_POLICIES=["expired","signature","revoked_status_list"]
         {
           "allow": [
             {
-              "vpPolicies": [
+              "vp_policies": [
                 "signature",
                 "expired"
               ],
-              "vcPolicies": [
+              "vc_policies": [
                 "signature",
                 "expired"
               ],
-              "requestCredentials": [
+              "request_credentials": [
                 {
                   "type": "VerifiableId",
                   "format": "jwt_vc_json"
@@ -86,15 +86,15 @@ DEFAULT_VC_POLICIES=["expired","signature","revoked_status_list"]
             {
               "allow": [
                 {
-                  "vpPolicies": [
+                  "vp_policies": [
                     "signature",
                     "expired"
                   ],
-                  "vcPolicies": [
+                  "vc_policies": [
                     "signature",
                     "expired"
                   ],
-                  "requestCredentials": [
+                  "request_credentials": [
                     {
                       "type": "VerifiableId",
                       "format": "jwt_vc_json"

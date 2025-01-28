@@ -44,15 +44,16 @@
                           {
                             "allow": [
                               {
-                                "vpPolicies": [
+                                "type": "SSIpolicy",
+                                "vp_policies": [
                                   "signature",
                                   "expired"
                                 ],
-                                "vcPolicies": [
+                                "vc_policies": [
                                   "signature",
                                   "expired"
                                 ],
-                                "requestCredentials": [
+                                "request_credentials": [
                                   {
                                     "type": "VerifiableId",
                                     "format": "jwt_vc_json"
@@ -81,17 +82,18 @@
                           {
                             "credentials": [
                               {
+                                "type": "SSIpolicy",
                                 "allow": [
                                   {
-                                    "vpPolicies": [
+                                    "vp_policies": [
                                       "signature",
                                       "expired"
                                     ],
-                                    "vcPolicies": [
+                                    "vc_policies": [
                                       "signature",
                                       "expired"
                                     ],
-                                    "requestCredentials": [
+                                    "request_credentials": [
                                       {
                                         "type": "VerifiableId",
                                         "format": "jwt_vc_json"

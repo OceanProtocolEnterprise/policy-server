@@ -24,9 +24,9 @@ describe('WaltIdPolicyHandler', () => {
             {
               allow: [
                 {
-                  vpPolicies: ['signature'],
-                  vcPolicies: ['signature'],
-                  requestCredentials: [
+                  vp_policies: ['signature'],
+                  vc_policies: ['signature'],
+                  request_credentials: [
                     {
                       type: 'VerifiableId',
                       format: 'jwt_vc_json'
