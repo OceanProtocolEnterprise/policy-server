@@ -11,8 +11,8 @@ To get the Policy Server up and running in a Docker container:
 AUTH_TYPE = "waltid"
 WALTID_VERIFIER_URL="https://verifier.portal.walt.id"
 WALTID_SUCCESS_REDIRECT_URL="https://example.com/success?id=$id"
-DEFAULT_VP_POLICIES=["expired","signature","revoked_status_list"]
-DEFAULT_VC_POLICIES=["expired","signature","revoked_status_list"]
+DEFAULT_VP_POLICIES=["expired","signature","revoked-status-list"]
+DEFAULT_VC_POLICIES=["expired","signature","revoked-status-list"]
 ```
 1. Start the Docker container:
 
@@ -145,12 +145,12 @@ Policy Server will always add default VP and VC policies, if they are specified 
   "vp_policies": [
     "expired",
     "signature",
-    "revoked_status_list"
+    "revoked-status-list"
   ],
   "vc_policies": [
     "expired",
     "signature",
-    "revoked_status_list"
+    "revoked-status-list"
   ],
   "request_credentials": [
     {
