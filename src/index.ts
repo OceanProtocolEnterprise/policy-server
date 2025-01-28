@@ -4,6 +4,8 @@ import swaggerUi from 'swagger-ui-express'
 import errorHandler, { asyncHandler } from './utils/middleware.js'
 import { PolicyRequestPayload, PolicyRequestResponse } from './@types/policy'
 import { PolicyHandlerFactory } from './policyHandlerFactory.js'
+import { handleVerifyPresentationRequest } from './utils/verifyPresentationRequest.js'
+
 const app = express()
 const authType = process.env.AUTH_TYPE || 'waltid'
 async function handlePolicyRequest(
@@ -28,6 +30,11 @@ async function handlePolicyRequest(
 
 app.use(express.json())
 app.post('/', asyncHandler(handlePolicyRequest))
+app.post(
+  '/verify/:id',
+  express.urlencoded({ extended: true }),
+  asyncHandler(handleVerifyPresentationRequest)
+)
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc))
 app.use(errorHandler)
 const PORT = process.env.PORT || 3000
