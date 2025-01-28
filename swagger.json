@@ -40,84 +40,46 @@
                     "action": "initiate",
                     "ddo": {
                       "credentialSubject": {
-                        "credentials": [
-                          {
-                            "allow": [
-                              {
-                                "type": "SSIpolicy",
-                                "vp_policies": [
-                                  "signature",
-                                  "expired"
-                                ],
-                                "vc_policies": [
-                                  "signature",
-                                  "expired"
-                                ],
-                                "request_credentials": [
-                                  {
-                                    "type": "VerifiableId",
-                                    "format": "jwt_vc_json"
-                                  },
-                                  {
-                                    "type": "ProofOfResidence",
-                                    "format": "jwt_vc_json"
-                                  },
-                                  {
-                                    "type": "OpenBadgeCredential",
-                                    "format": "jwt_vc_json",
-                                    "policies": [
-                                      "signature",
-                                      {
-                                        "policy": "webhook",
-                                        "args": "https://example.org/abc/xyz"
-                                      }
-                                    ]
-                                  }
-                                ]
-                              }
-                            ]
-                          }
-                        ],
+                        "credentials": {
+                          "allow": [
+                            {
+                              "type": "SSIpolicy",
+                              "values": [
+                                {
+                                  "vp_policies": ["signature", "expired"],
+                                  "vc_policies": ["signature", "expired"],
+                                  "request_credentials": [
+                                    {
+                                      "type": "UniversityDegree",
+                                      "format": "jwt_vc_json"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
                         "services": [
                           {
-                            "credentials": [
-                              {
-                                "type": "SSIpolicy",
-                                "allow": [
-                                  {
-                                    "vp_policies": [
-                                      "signature",
-                                      "expired"
-                                    ],
-                                    "vc_policies": [
-                                      "signature",
-                                      "expired"
-                                    ],
-                                    "request_credentials": [
-                                      {
-                                        "type": "VerifiableId",
-                                        "format": "jwt_vc_json"
-                                      },
-                                      {
-                                        "type": "ProofOfResidence",
-                                        "format": "jwt_vc_json"
-                                      },
-                                      {
-                                        "type": "OpenBadgeCredential",
-                                        "format": "jwt_vc_json",
-                                        "policies": [
-                                          "signature",
-                                          {
-                                            "policy": "webhook",
-                                            "args": "https://example.org/abc/xyz"
-                                          }
-                                        ]
-                                      }
-                                    ]
-                                  }
-                                ]
-                              }
-                            ]
+                            "credentials": {
+                              "allow": [
+                                {
+                                  "type": "SSIpolicy",
+                                  "values": [
+                                    {
+                                      "vp_policies": ["signature", "expired"],
+                                      "vc_policies": ["signature", "expired"],
+                                      "request_credentials": [
+                                        {
+                                          "type": "VerifiableId",
+                                          "format": "jwt_vc_json"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
                           }
                         ]
                       }

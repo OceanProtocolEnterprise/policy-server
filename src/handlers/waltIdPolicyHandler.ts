@@ -22,7 +22,7 @@ export class WaltIdPolicyHandler extends PolicyHandler {
       stateId: uuid,
       successRedirectUri: process.env.WALTID_SUCCESS_REDIRECT_URL || ''
     }
-
+    console.log(requestCredentialsBody)
     const response = await axios.post(url.toString(), requestCredentialsBody, { headers })
 
     const redirectUrl = process.env.WALTID_VERIFY_RESPONSE_REDIRECT_URL.replace(
@@ -172,14 +172,16 @@ export class WaltIdPolicyHandler extends PolicyHandler {
 
   private parserequest_credentials(requestPayload: any): any {
     const credentialSubject = requestPayload?.ddo?.credentialSubject
+    const targetType = 'SSIpolicy'
+    const credentialSubjectCredentials = credentialSubject?.credentials?.allow
+      ?.filter((item: any) => item.type === targetType)
+      ?.flatMap((item: any) => item.values || [])
 
-    const credentialSubjectCredentials =
-      credentialSubject?.credentials?.flatMap((entry: any) => entry.allow || []) || []
-
-    const serviceCredentials =
-      credentialSubject?.services?.flatMap((service: any) =>
-        service.credentials?.flatMap((entry: any) => entry.allow || [])
-      ) || []
+    const serviceCredentials = credentialSubject?.services
+      ?.flatMap((service: any) =>
+        service.credentials?.allow?.filter((item: any) => item.type === targetType)
+      )
+      ?.flatMap((item: any) => item.values || [])
 
     if (credentialSubjectCredentials.length === 0 && serviceCredentials.length === 0) {
       console.warn("No 'credentials' found in credentialSubject or its services.")
