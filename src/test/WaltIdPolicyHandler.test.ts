@@ -20,22 +20,25 @@ describe('WaltIdPolicyHandler', () => {
       action: 'initiate',
       ddo: {
         credentialSubject: {
-          credentials: [
-            {
-              allow: [
-                {
-                  vp_policies: ['signature'],
-                  vc_policies: ['signature'],
-                  request_credentials: [
-                    {
-                      type: 'VerifiableId',
-                      format: 'jwt_vc_json'
-                    }
-                  ]
-                }
-              ]
-            }
-          ]
+          credentials: {
+            allow: [
+              {
+                type: 'SSIpolicy',
+                values: [
+                  {
+                    vp_policies: ['signature'],
+                    vc_policies: ['signature'],
+                    request_credentials: [
+                      {
+                        type: 'VerifiableId',
+                        format: 'jwt_vc_json'
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
         }
       }
     }
