@@ -49,33 +49,42 @@ export class WaltIdPolicyHandler extends PolicyHandler {
         'Request body does not contain policyServer.sessionId'
       )
 
-    if (!requestPayload.policyServer.vp_token)
-      return buildInvalidRequestMessage(
-        'Request body does not contain policyServer.vp_token'
-      )
+    // if (!requestPayload.policyServer.vp_token)
+    //   return buildInvalidRequestMessage(
+    //     'Request body does not contain policyServer.vp_token'
+    //   )
 
-    if (!requestPayload.policyServer.response)
-      return buildInvalidRequestMessage(
-        'Request body does not contain policyServer.response'
-      )
+    // if (!requestPayload.policyServer.response)
+    //   return buildInvalidRequestMessage(
+    //     'Request body does not contain policyServer.response'
+    //   )
 
-    if (!requestPayload.policyServer.presentation_submission)
-      return buildInvalidRequestMessage(
-        'Request body does not contain policyServer.presentation_submission'
-      )
+    // if (!requestPayload.policyServer.presentation_submission)
+    //   return buildInvalidRequestMessage(
+    //     'Request body does not contain policyServer.presentation_submission'
+    //   )
 
     const url = new URL(
       `/openid4vc/verify/${requestPayload.policyServer.sessionId}`,
       process.env.WALTID_VERIFIER_URL
     )
+    const requestBody = new URLSearchParams()
+    if (requestPayload.policyServer.vp_token)
+      requestBody.append('vp_token', requestPayload.policyServer.vp_token)
+    if (requestPayload.policyServer.presentation_submission)
+      requestBody.append(
+        'presentation_submission',
+        requestPayload.policyServer.presentation_submission
+      )
+    if (requestPayload.policyServer.response)
+      requestBody.append('response', requestPayload.policyServer.response)
 
-    const requestBody = {
-      vp_token: requestPayload.policyServer.vp_token,
-      response: requestPayload.policyServer.response,
-      presentation_submission: requestPayload.policyServer.presentation_submission
-    }
+    const response = await axios.post(url.toString(), requestBody.toString(), {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    })
 
-    const response = await axios.post(url.toString(), requestBody)
     const success =
       !process.env.WALTID_SUCCESS_REDIRECT_URL ||
       (response.data.redirect_uri &&
