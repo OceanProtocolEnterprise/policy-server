@@ -3,7 +3,6 @@ import { expect } from 'chai'
 import sinon from 'sinon'
 import axios from 'axios'
 import { WaltIdPolicyHandler } from '../handlers/waltIdPolicyHandler.js'
-
 describe('WaltIdPolicyHandler', () => {
   let handler: WaltIdPolicyHandler
 
