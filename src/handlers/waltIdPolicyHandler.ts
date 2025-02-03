@@ -4,8 +4,7 @@ import { randomUUID } from 'crypto'
 import { PolicyRequestPayload, PolicyRequestResponse } from '../@types/policy.js'
 import { PolicyHandler } from '../policyHandler.js'
 import { buildInvalidRequestMessage } from '../utils/validateRequests.js'
-import dotenv from 'dotenv'
-dotenv.config()
+
 export class WaltIdPolicyHandler extends PolicyHandler {
   public async initiate(
     requestPayload: PolicyRequestPayload
@@ -49,21 +48,6 @@ export class WaltIdPolicyHandler extends PolicyHandler {
       return buildInvalidRequestMessage(
         'Request body does not contain policyServer.sessionId'
       )
-
-    // if (!requestPayload.policyServer.vp_token)
-    //   return buildInvalidRequestMessage(
-    //     'Request body does not contain policyServer.vp_token'
-    //   )
-
-    // if (!requestPayload.policyServer.response)
-    //   return buildInvalidRequestMessage(
-    //     'Request body does not contain policyServer.response'
-    //   )
-
-    // if (!requestPayload.policyServer.presentation_submission)
-    //   return buildInvalidRequestMessage(
-    //     'Request body does not contain policyServer.presentation_submission'
-    //   )
 
     const url = new URL(
       `/openid4vc/verify/${requestPayload.policyServer.sessionId}`,
