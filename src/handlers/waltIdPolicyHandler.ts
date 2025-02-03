@@ -4,6 +4,8 @@ import { randomUUID } from 'crypto'
 import { PolicyRequestPayload, PolicyRequestResponse } from '../@types/policy.js'
 import { PolicyHandler } from '../policyHandler.js'
 import { buildInvalidRequestMessage } from '../utils/validateRequests.js'
+import dotenv from 'dotenv'
+dotenv.config()
 export class WaltIdPolicyHandler extends PolicyHandler {
   public async initiate(
     requestPayload: PolicyRequestPayload
@@ -174,15 +176,18 @@ export class WaltIdPolicyHandler extends PolicyHandler {
     const targetType = 'SSIpolicy'
     const credentialSubjectCredentials =
       credentialSubject?.credentials?.allow
-        ?.filter((item: any) => item.type === targetType)
-        ?.flatMap((item: any) => item.values || []) || []
+        ?.filter((item: any) => item?.type === targetType)
+        ?.flatMap((item: any) => item?.values ?? []) ?? []
 
     const serviceCredentials =
       credentialSubject?.services
-        ?.flatMap((service: any) =>
-          service.credentials?.allow?.filter((item: any) => item.type === targetType)
+        ?.flatMap(
+          (service: any) =>
+            service?.credentials?.allow?.filter(
+              (item: any) => item?.type === targetType
+            ) ?? []
         )
-        ?.flatMap((item: any) => item.values || []) || []
+        ?.flatMap((item: any) => item?.values ?? []) ?? []
 
     if (credentialSubjectCredentials.length === 0 && serviceCredentials.length === 0) {
       console.warn("No 'credentials' found in credentialSubject or its services.")
