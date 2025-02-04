@@ -32,12 +32,16 @@ async function handlePolicyRequest(
 app.use(express.json())
 app.use(requestLogger)
 app.post('/', asyncHandler(handlePolicyRequest))
-app.post(
-  '/verify/:id',
-  express.urlencoded({ extended: true }),
-  asyncHandler(handleVerifyPresentationRequest)
-)
-app.get('/logs', downloadLogs)
+if (process.env.OCEAN_NODE_URL) {
+  app.post(
+    '/verify/:id',
+    express.urlencoded({ extended: true }),
+    asyncHandler(handleVerifyPresentationRequest)
+  )
+}
+if (process.env.ENABLE_LOGS && process.env.ENABLE_LOGS === '1') {
+  app.get('/logs', downloadLogs)
+}
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc))
 app.use(errorHandler)
 
