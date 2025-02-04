@@ -1,4 +1,5 @@
 import { PolicyRequestResponse, PolicyRequestPayload } from './@types/policy'
+import { logError } from './utils/logger.js'
 
 export class PolicyHandler {
   // eslint-disable-next-line no-undef
@@ -12,11 +13,14 @@ export class PolicyHandler {
 
     const method = this[action]
     if (typeof method === 'function') return await method.call(this, policyRequestPayload)
-    else
+    else {
+      const msg = `Action "${action}" does not exist in "${authType}" PolicyHandler`
+      logError(msg)
       return {
         success: false,
-        message: `Action "${action}" does not exist in "${authType}" PolicyHandler`,
+        message: msg,
         httpStatus: 404
       }
+    }
   }
 }

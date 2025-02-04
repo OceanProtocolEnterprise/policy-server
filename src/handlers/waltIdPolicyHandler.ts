@@ -4,6 +4,7 @@ import { randomUUID } from 'crypto'
 import { PolicyRequestPayload, PolicyRequestResponse } from '../@types/policy.js'
 import { PolicyHandler } from '../policyHandler.js'
 import { buildInvalidRequestMessage } from '../utils/validateRequests.js'
+import { logInfo } from '../utils/logger.js'
 
 export class WaltIdPolicyHandler extends PolicyHandler {
   public async initiate(
@@ -23,6 +24,14 @@ export class WaltIdPolicyHandler extends PolicyHandler {
       stateId: uuid,
       successRedirectUri: process.env.WALTID_SUCCESS_REDIRECT_URL || ''
     }
+
+    logInfo({
+      message: 'WaltId: payload',
+      url: url.toString(),
+      headers,
+      requestCredentialsBody
+    })
+
     const response = await axios.post(url.toString(), requestCredentialsBody, { headers })
 
     const redirectUrl = process.env.WALTID_VERIFY_RESPONSE_REDIRECT_URL.replace(
@@ -34,11 +43,18 @@ export class WaltIdPolicyHandler extends PolicyHandler {
       `response_uri=${encodeURIComponent(redirectUrl)}`
     )
 
-    return {
+    const policyResponse = {
       success: response.status === 200,
       message: updatedResponseData,
       httpStatus: response.status
     }
+
+    logInfo({
+      message: 'PS: response',
+      policyResponse
+    })
+
+    return policyResponse
   }
 
   public async presentationRequest(
@@ -64,6 +80,12 @@ export class WaltIdPolicyHandler extends PolicyHandler {
     if (requestPayload.policyServer.response)
       requestBody.append('response', requestPayload.policyServer.response)
 
+    logInfo({
+      message: 'WaltId: payload',
+      url: url.toString(),
+      requestBody
+    })
+
     const response = await axios.post(url.toString(), requestBody.toString(), {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
@@ -77,15 +99,25 @@ export class WaltIdPolicyHandler extends PolicyHandler {
           response.data.redirect_uri,
           requestPayload.policyServer.sessionId
         ))
-    return {
+
+    const policyResponse = {
       success: response.status === 200 && success,
       message: response.data,
       httpStatus: response.status
     }
+    logInfo({
+      message: 'PS: response',
+      policyResponse
+    })
+    return policyResponse
   }
 
   verifySuccessRedirectUri(redirectUri: string, sessionId: string): boolean {
     const expectedUri = process.env.WALTID_SUCCESS_REDIRECT_URL.replace('$id', sessionId)
+    logInfo({
+      expectedUri,
+      redirectUri
+    })
     return decodeURIComponent(redirectUri) === expectedUri
   }
 
@@ -102,12 +134,22 @@ export class WaltIdPolicyHandler extends PolicyHandler {
       process.env.WALTID_VERIFIER_URL
     )
 
+    logInfo({
+      message: 'WaltId: payload',
+      url
+    })
+
     const response = await axios.get(url.toString())
-    return {
+    const policyResponse = {
       success: response.status === 200 && response.data.verificationResult,
       message: response.data,
       httpStatus: response.status
     }
+    logInfo({
+      message: 'PS: response',
+      policyResponse
+    })
+    return policyResponse
   }
 
   public async download(
@@ -123,12 +165,22 @@ export class WaltIdPolicyHandler extends PolicyHandler {
       process.env.WALTID_VERIFIER_URL
     )
 
+    logInfo({
+      message: 'WaltId: payload',
+      url
+    })
+
     const response = await axios.get(url.toString())
-    return {
+    const policyResponse = {
       success: response.status === 200 && response.data.verificationResult,
       message: response.data,
       httpStatus: response.status
     }
+    logInfo({
+      message: 'PS: response',
+      policyResponse
+    })
+    return policyResponse
   }
 
   public async passthrough(
@@ -147,12 +199,21 @@ export class WaltIdPolicyHandler extends PolicyHandler {
       url,
       data: requestPayload.body
     }
+    logInfo({
+      message: 'WaltId: payload',
+      requestConfig
+    })
     const response = await axios(requestConfig)
-    return {
+    const policyResponse = {
       success: response.status === 200,
       message: response.data,
       httpStatus: response.status
     }
+    logInfo({
+      message: 'PS: response',
+      policyResponse
+    })
+    return policyResponse
   }
 
   private parserequest_credentials(requestPayload: any): any {

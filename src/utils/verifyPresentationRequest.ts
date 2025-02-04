@@ -1,6 +1,7 @@
 /* eslint-disable camelcase */
 import { Request, Response } from 'express'
 import axios from 'axios'
+import { logInfo } from './logger.js'
 
 export async function handleVerifyPresentationRequest(
   req: Request<{ id: string }, {}, any>,
@@ -12,17 +13,36 @@ export async function handleVerifyPresentationRequest(
   const response = req.body?.response || undefined
 
   const requestPayload = {
-    action: 'presentationRequest',
-    policyServer: {
-      sessionId: id,
-      vp_token,
-      presentation_submission,
-      response
+    policyServerPassthrough: {
+      action: 'presentationRequest',
+      policyServer: {
+        sessionId: id,
+        vp_token,
+        presentation_submission,
+        response
+      }
     }
   }
-  const baseUrl = `${req.protocol}://${req.get('host')}`
-  const apiResponse = await axios.post(`${baseUrl}/`, requestPayload, {
+
+  const baseUrl = new URL(
+    '/api/services/PolicyServerPassThrough',
+    process.env.OCEAN_NODE_URL
+  )
+
+  logInfo({
+    message: 'Ocean node: payload',
+    baseUrl,
+    requestPayload
+  })
+
+  const apiResponse = await axios.post(baseUrl.toString(), requestPayload, {
     headers: { 'Content-Type': 'application/json' }
+  })
+
+  logInfo({
+    message: 'Ocean node: response',
+    baseUrl,
+    apiResponse
   })
 
   res.status(apiResponse.status).json(apiResponse.data)

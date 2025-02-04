@@ -18,7 +18,7 @@
     "release": "release-it --non-interactive",
     "changelog": "auto-changelog -p",
     "mocha": "mocha --node-env=test --config .mocharc.json",
-   "test:unit": "npm run build-tests:tsc && npm run mocha \"./dist/test/*.test.js\""
+    "test:unit": "npm run build-tests:tsc && npm run mocha \"./dist/test/*.test.js\""
   },
   "author": "",
   "license": "ISC",
@@ -27,9 +27,12 @@
     "chai-http": "^5.1.1",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
+    "express-winston": "^4.2.0",
     "inversify": "^6.1.1",
     "reflect-metadata": "^0.2.2",
-    "swagger-ui-express": "^5.0.1"
+    "swagger-ui-express": "^5.0.1",
+    "winston": "^3.17.0",
+    "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
     "@types/chai": "^5.0.1",
