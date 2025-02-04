@@ -31,7 +31,7 @@ export async function handleVerifyPresentationRequest(
 
   logInfo({
     message: 'Ocean node: payload',
-    baseUrl,
+    baseUrl: baseUrl.toString(),
     requestPayload
   })
 
@@ -41,8 +41,9 @@ export async function handleVerifyPresentationRequest(
 
   logInfo({
     message: 'Ocean node: response',
-    baseUrl,
-    apiResponse
+    baseUrl: baseUrl.toString(),
+    status: apiResponse.status,
+    data: apiResponse.data
   })
 
   res.status(apiResponse.status).json(apiResponse.data)
