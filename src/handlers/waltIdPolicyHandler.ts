@@ -60,25 +60,21 @@ export class WaltIdPolicyHandler extends PolicyHandler {
   public async presentationRequest(
     requestPayload: PolicyRequestPayload
   ): Promise<PolicyRequestResponse> {
-    if (!requestPayload.policyServer.sessionId)
-      return buildInvalidRequestMessage(
-        'Request body does not contain policyServer.sessionId'
-      )
+    if (!requestPayload.sessionId)
+      return buildInvalidRequestMessage('Request body does not contain sessionId')
 
     const url = new URL(
-      `/openid4vc/verify/${requestPayload.policyServer.sessionId}`,
+      `/openid4vc/verify/${requestPayload.sessionId}`,
       process.env.WALTID_VERIFIER_URL
     )
     const requestBody = new URLSearchParams()
-    if (requestPayload.policyServer.vp_token)
-      requestBody.append('vp_token', requestPayload.policyServer.vp_token)
-    if (requestPayload.policyServer.presentation_submission)
+    if (requestPayload.vp_token) requestBody.append('vp_token', requestPayload.vp_token)
+    if (requestPayload.presentation_submission)
       requestBody.append(
         'presentation_submission',
-        requestPayload.policyServer.presentation_submission
+        requestPayload.presentation_submission
       )
-    if (requestPayload.policyServer.response)
-      requestBody.append('response', requestPayload.policyServer.response)
+    if (requestPayload.response) requestBody.append('response', requestPayload.response)
 
     logInfo({
       message: 'WaltId: payload',
@@ -97,7 +93,7 @@ export class WaltIdPolicyHandler extends PolicyHandler {
       (response.data.redirect_uri &&
         this.verifySuccessRedirectUri(
           response.data.redirect_uri,
-          requestPayload.policyServer.sessionId
+          requestPayload.sessionId
         ))
 
     const policyResponse = {
@@ -124,13 +120,11 @@ export class WaltIdPolicyHandler extends PolicyHandler {
   public async checkSessionId(
     requestPayload: PolicyRequestPayload
   ): Promise<PolicyRequestResponse> {
-    if (!requestPayload.policyServer.sessionId)
-      return buildInvalidRequestMessage(
-        'Request body does not contain policyServer.sessionId'
-      )
+    if (!requestPayload.sessionId)
+      return buildInvalidRequestMessage('Request body does not contain sessionId')
 
     const url = new URL(
-      `/openid4vc/session/${requestPayload.policyServer.sessionId}`,
+      `/openid4vc/session/${requestPayload.sessionId}`,
       process.env.WALTID_VERIFIER_URL
     )
 
@@ -155,13 +149,11 @@ export class WaltIdPolicyHandler extends PolicyHandler {
   public async download(
     requestPayload: PolicyRequestPayload
   ): Promise<PolicyRequestResponse> {
-    if (!requestPayload.policyServer.sessionId)
-      return buildInvalidRequestMessage(
-        'Request body does not contain policyServer.sessionId'
-      )
+    if (!requestPayload.sessionId)
+      return buildInvalidRequestMessage('Request body does not contain sessionId')
 
     const url = new URL(
-      `/openid4vc/session/${requestPayload.policyServer.sessionId}`,
+      `/openid4vc/session/${requestPayload.sessionId}`,
       process.env.WALTID_VERIFIER_URL
     )
 

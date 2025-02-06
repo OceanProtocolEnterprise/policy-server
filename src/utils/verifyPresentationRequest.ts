@@ -15,12 +15,10 @@ export async function handleVerifyPresentationRequest(
   const requestPayload = {
     policyServerPassthrough: {
       action: 'presentationRequest',
-      policyServer: {
-        sessionId: id,
-        vp_token,
-        presentation_submission,
-        response
-      }
+      sessionId: id,
+      vp_token,
+      presentation_submission,
+      response
     }
   }
 

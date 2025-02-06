@@ -122,8 +122,7 @@ DEFAULT_VC_POLICIES=["expired","signature","revoked-status-list"]
         }
       ]
     }
-  },
-  "policyServer": {}
+  }
 }
 
 ```
@@ -200,12 +199,10 @@ ex. `https://verifier.portal.walt.id/openid4vc/verify/$id`where $id represents t
 ```json
 {
   "action": "presentationRequest",
-  "policyServer": {
-    "sessionId": "ec64a21c-3d81-44f9-8b1d-099c1ec0c7b6",
+     "sessionId": "ec64a21c-3d81-44f9-8b1d-099c1ec0c7b6",
     "vp_token": the vp token,
     "response": the response,
     "presentation_submission": the presentation_submission
-  }
 }
 ```
 
@@ -237,9 +234,7 @@ ex. `https://verifier.portal.walt.id/openid4vc/verify/$id`where $id represents t
 ```json
 {
   "action": "checkSessionId",
-  "policyServer": {
-    "sessionId": "ec64a21c-3d81-44f9-8b1d-099c1ec0c7b6"
-  }
+   "sessionId": "ec64a21c-3d81-44f9-8b1d-099c1ec0c7b6"
 }
 ```
 
@@ -271,9 +266,7 @@ ex. `https://verifier.portal.walt.id/openid4vc/verify/$id`where $id represents t
 ```json
 {
   "action": "download",
-  "policyServer": {
-    "sessionId": "ec64a21c-3d81-44f9-8b1d-099c1ec0c7b6"
-  }
+   "sessionId": "ec64a21c-3d81-44f9-8b1d-099c1ec0c7b6"
 }
 ```
 
@@ -318,7 +311,6 @@ ex. `https://verifier.portal.walt.id/openid4vc/verify/$id`where $id represents t
       }
     ]
   },
-  "policyServer": {}
 }
 
 ```

@@ -83,38 +83,31 @@
                           }
                         ]
                       }
-                    },
-                    "policyServer": {}
+                    }
                   }
                 },
                 "checkSessionId": {
                   "summary": "Check Session Id action, returns presentation state object",
                   "value": {
                     "action": "checkSessionId",
-                    "policyServer": {
                       "sessionId": ""
-                    }
                   }
                 },
                 "presentationRequest": {
                   "summary": "Presentation Request action, fulfills presentation request",
                   "value": {
                     "action": "presentationRequest",
-                    "policyServer": {
-                      "sessionId": "",
+                    "sessionId": "",
                       "vp_token": null,
                       "response": null,
                       "presentation_submission": null
-                    }
                   }
                 },
                 "download": {
                   "summary": "Download action, returns verification result",
                   "value": {
                     "action": "download",
-                    "policyServer": {
                       "sessionId": ""
-                    }
                   }
                 },
                 "passthrough": {
@@ -123,8 +116,7 @@
                     "action": "passthrough",
                     "url": "/url",
                     "httpMethod": "GET",
-                    "body": {},
-                    "policyServer": {}
+                    "body": {}
                   }
                 }
               }

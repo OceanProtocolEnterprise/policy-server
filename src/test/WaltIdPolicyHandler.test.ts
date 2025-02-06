@@ -65,12 +65,10 @@ describe('WaltIdPolicyHandler', () => {
 
   it('should call presentationRequest with valid payload', async () => {
     const payload = {
-      policyServer: {
-        sessionId: 'session123',
-        vp_token: 'token123',
-        response: 'response123',
-        presentation_submission: 'submission123'
-      }
+      sessionId: 'session123',
+      vp_token: 'token123',
+      response: 'response123',
+      presentation_submission: 'submission123'
     }
 
     const stub = sinon.stub(axios, 'post').resolves({ status: 200, data: 'success' })
@@ -82,21 +80,17 @@ describe('WaltIdPolicyHandler', () => {
   })
 
   it('should return error for invalid payload in presentationRequest', async () => {
-    const payload = { policyServer: {} }
+    const payload = {}
 
     const response = await handler.presentationRequest(payload as any)
 
     expect(response.success).to.be.false
-    expect(response.message).to.include(
-      'Request body does not contain policyServer.sessionId'
-    )
+    expect(response.message).to.include('Request body does not contain sessionId')
   })
 
   it('should call checkSessionId with valid payload', async () => {
     const payload = {
-      policyServer: {
-        sessionId: 'session123'
-      }
+      sessionId: 'session123'
     }
 
     const stub = sinon.stub(axios, 'get').resolves({ status: 200, data: 'sessionData' })
@@ -108,21 +102,17 @@ describe('WaltIdPolicyHandler', () => {
   })
 
   it('should return error for invalid payload in checkSessionId', async () => {
-    const payload = { policyServer: {} }
+    const payload = {}
 
     const response = await handler.checkSessionId(payload as any)
 
     expect(response.success).to.be.false
-    expect(response.message).to.include(
-      'Request body does not contain policyServer.sessionId'
-    )
+    expect(response.message).to.include('Request body does not contain sessionId')
   })
 
   it('should call download with valid payload', async () => {
     const payload = {
-      policyServer: {
-        sessionId: 'session123'
-      }
+      sessionId: 'session123'
     }
 
     const stub = sinon.stub(axios, 'get').resolves({
@@ -139,14 +129,12 @@ describe('WaltIdPolicyHandler', () => {
   })
 
   it('should return error for invalid payload in download', async () => {
-    const payload = { policyServer: {} }
+    const payload = {}
 
     const response = await handler.download(payload as any)
 
     expect(response.success).to.be.false
-    expect(response.message).to.include(
-      'Request body does not contain policyServer.sessionId'
-    )
+    expect(response.message).to.include('Request body does not contain sessionId')
   })
 
   it('should return error for invalid payload in passthrough', async () => {
