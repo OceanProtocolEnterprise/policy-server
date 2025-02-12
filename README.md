@@ -41,6 +41,7 @@ DEFAULT_VC_POLICIES=["expired","signature","revoked-status-list"]
 ```json
 {
   "action": "initiate",
+  "sessionId": "", //optional
   "ddo": {
     "credentialSubject": {
       "credentials": [
@@ -216,7 +217,9 @@ ex. `https://verifier.portal.walt.id/openid4vc/verify/$id`where $id represents t
 {
   "success": true,
   "message": {
-    redirect_uri: "empty or the process.env.WALTID_SUCCESS_REDIRECT_URL"
+    successUri: "empty or the process.env.WALTID_SUCCESS_REDIRECT_URL",
+    sessionId: "ec64a21c-3d81-44f9-8b1d-099c1ec0c7b6",
+    error: "empty or the error",
   },
   "httpStatus": 200
 }

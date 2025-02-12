@@ -38,6 +38,7 @@
                   "summary": "Initiate action, returns presentation_uri including session_id",
                   "value": {
                     "action": "initiate",
+                    "sessionId": "",
                     "ddo": {
                       "credentialSubject": {
                         "credentials": {

@@ -4,7 +4,7 @@ import { randomUUID } from 'crypto'
 import { PolicyRequestPayload, PolicyRequestResponse } from '../@types/policy.js'
 import { PolicyHandler } from '../policyHandler.js'
 import { buildInvalidRequestMessage } from '../utils/validateRequests.js'
-import { logInfo } from '../utils/logger.js'
+import { logError, logInfo } from '../utils/logger.js'
 
 export class WaltIdPolicyHandler extends PolicyHandler {
   public async initiate(
@@ -18,7 +18,11 @@ export class WaltIdPolicyHandler extends PolicyHandler {
     const url = new URL(`/openid4vc/verify`, process.env.WALTID_VERIFIER_URL)
 
     const requestCredentialsBody = this.parserequest_credentials(requestPayload)
-    const uuid = randomUUID()
+
+    const uuid =
+      requestPayload.sessionId && requestPayload.sessionId !== ''
+        ? requestPayload.sessionId
+        : randomUUID()
 
     const headers = {
       stateId: uuid,
@@ -33,6 +37,12 @@ export class WaltIdPolicyHandler extends PolicyHandler {
     })
 
     const response = await axios.post(url.toString(), requestCredentialsBody, { headers })
+
+    logInfo({
+      message: 'WaltId: response',
+      url: url.toString(),
+      response: response.data
+    })
 
     const redirectUrl = process.env.WALTID_VERIFY_RESPONSE_REDIRECT_URL.replace(
       '$id',
@@ -82,30 +92,66 @@ export class WaltIdPolicyHandler extends PolicyHandler {
       requestBody
     })
 
-    const response = await axios.post(url.toString(), requestBody.toString(), {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
+    try {
+      const response = await axios.post(url.toString(), requestBody.toString(), {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      })
+      logInfo({
+        message: 'WaltId: response',
+        url: url.toString(),
+        response: response.data
+      })
+
+      const success =
+        !process.env.WALTID_SUCCESS_REDIRECT_URL ||
+        (response.data.redirect_uri &&
+          this.verifySuccessRedirectUri(
+            response.data.redirect_uri,
+            requestPayload.sessionId
+          ))
+
+      const responseData = JSON.stringify({
+        successUri: response.data,
+        sessionId: requestPayload.sessionId
+      })
+
+      const policyResponse = {
+        success: response.status === 200 && success,
+        message: responseData,
+        httpStatus: response.status
       }
-    })
+      logInfo({
+        message: 'PS: response',
+        policyResponse
+      })
 
-    const success =
-      !process.env.WALTID_SUCCESS_REDIRECT_URL ||
-      (response.data.redirect_uri &&
-        this.verifySuccessRedirectUri(
-          response.data.redirect_uri,
-          requestPayload.sessionId
-        ))
+      return policyResponse
+    } catch (error) {
+      logError({
+        message: 'WaltId: response',
+        url: url.toString(),
+        response: error?.response.data
+      })
 
-    const policyResponse = {
-      success: response.status === 200 && success,
-      message: response.data,
-      httpStatus: response.status
+      const responseData = JSON.stringify({
+        error: error?.response?.data?.message,
+        sessionId: requestPayload.sessionId
+      })
+
+      const policyResponse = {
+        success: false,
+        message: responseData,
+        httpStatus: error?.response.status
+      }
+      logInfo({
+        message: 'PS: response',
+        policyResponse
+      })
+
+      return policyResponse
     }
-    logInfo({
-      message: 'PS: response',
-      policyResponse
-    })
-    return policyResponse
   }
 
   verifySuccessRedirectUri(redirectUri: string, sessionId: string): boolean {
@@ -134,6 +180,13 @@ export class WaltIdPolicyHandler extends PolicyHandler {
     })
 
     const response = await axios.get(url.toString())
+
+    logInfo({
+      message: 'WaltId: response',
+      url: url.toString(),
+      response: response.data
+    })
+
     const policyResponse = {
       success: response.status === 200 && response.data.verificationResult,
       message: response.data,
@@ -163,6 +216,13 @@ export class WaltIdPolicyHandler extends PolicyHandler {
     })
 
     const response = await axios.get(url.toString())
+
+    logInfo({
+      message: 'WaltId: response',
+      url: url.toString(),
+      response: response.data
+    })
+
     const policyResponse = {
       success: response.status === 200 && response.data.verificationResult,
       message: response.data,
@@ -196,6 +256,13 @@ export class WaltIdPolicyHandler extends PolicyHandler {
       requestConfig
     })
     const response = await axios(requestConfig)
+
+    logInfo({
+      message: 'WaltId: response',
+      url: url.toString(),
+      response: response.data
+    })
+
     const policyResponse = {
       success: response.status === 200,
       message: response.data,
