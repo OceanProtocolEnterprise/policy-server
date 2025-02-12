@@ -135,10 +135,10 @@ export class WaltIdPolicyHandler extends PolicyHandler {
         response: error?.response.data
       })
 
-      const responseData = JSON.stringify({
+      const responseData = {
         error: error?.response?.data?.message,
         sessionId: requestPayload.sessionId
-      })
+      }
 
       const policyResponse = {
         success: false,
