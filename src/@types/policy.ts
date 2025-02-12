@@ -4,6 +4,6 @@ export type PolicyRequestPayload = {
 
 export type PolicyRequestResponse = {
   success: boolean
-  message?: string
+  message?: any
   httpStatus: number
 }

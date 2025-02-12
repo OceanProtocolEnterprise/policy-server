@@ -112,10 +112,10 @@ export class WaltIdPolicyHandler extends PolicyHandler {
             requestPayload.sessionId
           ))
 
-      const responseData = JSON.stringify({
+      const responseData = {
         successUri: response.data,
         sessionId: requestPayload.sessionId
-      })
+      }
 
       const policyResponse = {
         success: response.status === 200 && success,
