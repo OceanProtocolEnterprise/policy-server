@@ -4,7 +4,10 @@ import swaggerUi from 'swagger-ui-express'
 import { asyncHandler, requestLogger, errorHandler } from './utils/middleware.js'
 import { PolicyRequestPayload, PolicyRequestResponse } from './@types/policy'
 import { PolicyHandlerFactory } from './policyHandlerFactory.js'
-import { handleVerifyPresentationRequest } from './utils/verifyPresentationRequest.js'
+import {
+  handleGetPD,
+  handleVerifyPresentationRequest
+} from './utils/verifyPresentationRequest.js'
 import { downloadLogs } from './utils/logger.js'
 
 const app = express()
@@ -38,6 +41,7 @@ if (process.env.OCEAN_NODE_URL) {
     express.urlencoded({ extended: true }),
     asyncHandler(handleVerifyPresentationRequest)
   )
+  app.get('/pd/:id', asyncHandler(handleGetPD))
 }
 if (process.env.ENABLE_LOGS && process.env.ENABLE_LOGS === '1') {
   app.get('/logs', downloadLogs)
