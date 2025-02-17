@@ -244,7 +244,7 @@ export class WaltIdPolicyHandler extends PolicyHandler {
   public async download(
     requestPayload: PolicyRequestPayload
   ): Promise<PolicyRequestResponse> {
-    if (!requestPayload.policyServer.sessionId)
+    if (!requestPayload.policyServer?.sessionId)
       return buildInvalidRequestMessage('Request body does not contain sessionId')
 
     const url = new URL(
