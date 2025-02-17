@@ -108,7 +108,9 @@
                   "summary": "Download action, returns verification result",
                   "value": {
                     "action": "download",
+                    "policyServer":{
                       "sessionId": ""
+                    }
                   }
                 },
                 "passthrough": {

@@ -112,7 +112,9 @@ describe('WaltIdPolicyHandler', () => {
 
   it('should call download with valid payload', async () => {
     const payload = {
-      sessionId: 'session123'
+      policyServer: {
+        sessionId: 'session123'
+      }
     }
 
     const stub = sinon.stub(axios, 'get').resolves({

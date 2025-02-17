@@ -202,11 +202,11 @@ export class WaltIdPolicyHandler extends PolicyHandler {
   public async download(
     requestPayload: PolicyRequestPayload
   ): Promise<PolicyRequestResponse> {
-    if (!requestPayload.sessionId)
+    if (!requestPayload.policyServer.sessionId)
       return buildInvalidRequestMessage('Request body does not contain sessionId')
 
     const url = new URL(
-      `/openid4vc/session/${requestPayload.sessionId}`,
+      `/openid4vc/session/${requestPayload.policyServer.sessionId}`,
       process.env.WALTID_VERIFIER_URL
     )
 

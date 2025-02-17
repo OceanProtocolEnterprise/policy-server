@@ -269,7 +269,11 @@ ex. `https://verifier.portal.walt.id/openid4vc/verify/$id`where $id represents t
 ```json
 {
   "action": "download",
-   "sessionId": "ec64a21c-3d81-44f9-8b1d-099c1ec0c7b6"
+  "policyServer":
+  {
+    "sessionId": "ec64a21c-3d81-44f9-8b1d-099c1ec0c7b6"
+  }
+  
 }
 ```
 
