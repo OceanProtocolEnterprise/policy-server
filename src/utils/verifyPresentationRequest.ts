@@ -46,3 +46,41 @@ export async function handleVerifyPresentationRequest(
 
   res.status(apiResponse.status).json(apiResponse.data)
 }
+
+export async function handleGetPD(
+  req: Request<{ id: string }, {}, any>,
+  res: Response
+): Promise<void> {
+  const { id } = req.params
+
+  const requestPayload = {
+    policyServerPassthrough: {
+      action: 'getPD',
+      sessionId: id
+    }
+  }
+
+  const baseUrl = new URL(
+    '/api/services/PolicyServerPassThrough',
+    process.env.OCEAN_NODE_URL
+  )
+
+  logInfo({
+    message: 'Ocean node: payload',
+    baseUrl: baseUrl.toString(),
+    requestPayload
+  })
+
+  const apiResponse = await axios.post(baseUrl.toString(), requestPayload, {
+    headers: { 'Content-Type': 'application/json' }
+  })
+
+  logInfo({
+    message: 'Ocean node: response',
+    baseUrl: baseUrl.toString(),
+    status: apiResponse.status,
+    data: apiResponse.data
+  })
+
+  res.status(apiResponse.status).json(apiResponse.data)
+}

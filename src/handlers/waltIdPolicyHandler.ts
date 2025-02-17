@@ -48,10 +48,16 @@ export class WaltIdPolicyHandler extends PolicyHandler {
       '$id',
       uuid
     )
-    const updatedResponseData = response.data.replace(
-      /response_uri=([^&]*)/,
-      `response_uri=${encodeURIComponent(redirectUrl)}`
+    const definitionUrl = process.env.WALTID_VERIFY_PRESENTATION_DEFINITION_URL.replace(
+      '$id',
+      uuid
     )
+    const updatedResponseData = response.data
+      .replace(/response_uri=([^&]*)/, `response_uri=${encodeURIComponent(redirectUrl)}`)
+      .replace(
+        /presentation_definition_uri=([^&]*)/,
+        `presentation_definition_uri=${encodeURIComponent(definitionUrl)}`
+      )
 
     const policyResponse = {
       success: response.status === 200,
@@ -152,6 +158,42 @@ export class WaltIdPolicyHandler extends PolicyHandler {
 
       return policyResponse
     }
+  }
+
+  public async getPD(
+    requestPayload: PolicyRequestPayload
+  ): Promise<PolicyRequestResponse> {
+    if (!requestPayload.sessionId)
+      return buildInvalidRequestMessage('Request body does not contain sessionId')
+
+    const url = new URL(
+      `/openid4vc/pd/${requestPayload.sessionId}`,
+      process.env.WALTID_VERIFIER_URL
+    )
+
+    logInfo({
+      message: 'WaltId: payload',
+      url: url.toString()
+    })
+
+    const response = await axios.get(url.toString())
+    logInfo({
+      message: 'WaltId: response',
+      url: url.toString(),
+      response: response.data
+    })
+
+    const policyResponse = {
+      success: response.status === 200,
+      message: response.data,
+      httpStatus: response.status
+    }
+    logInfo({
+      message: 'PS: response',
+      policyResponse
+    })
+
+    return policyResponse
   }
 
   verifySuccessRedirectUri(redirectUri: string, sessionId: string): boolean {

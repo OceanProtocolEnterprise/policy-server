@@ -27,9 +27,10 @@ DEFAULT_VC_POLICIES=["expired","signature","revoked-status-list"]
 
 **1. initiate
 2. presentationRequest
-3. checkSessionId
-4. download
-5. passthrough**
+3. getPD
+4. checkSessionId
+5. download
+6. passthrough**
 
 
 ## 1) initiate
@@ -187,8 +188,8 @@ Policy Server will always add default VP and VC policies, if they are specified 
 
 ```
 In this case `state=ec64a21c-3d81-44f9-8b1d-099c1ec0c7b6` represents Session Id.
-Also, Policy Server replace default `response_uri` by `WALTID_VERIFY_RESPONSE_REDIRECT_URL` env variable, 
-ex. `https://verifier.portal.walt.id/openid4vc/verify/$id`where $id represents the session id.
+Also, Policy Server replace default `response_uri` by `WALTID_VERIFY_RESPONSE_REDIRECT_URL` env variable and `presentation_definition_uri` by `WALTID_VERIFY_PRESENTATION_DEFINITION_URL` env variable, 
+ex. `https://verifier.portal.walt.id/openid4vc/verify/$id`and `http://ocean-node-vm2.oceanenterprise.io:8100/pd/$id` where $id represents the session id.
 
 
 ## 2) presentationRequest
@@ -208,9 +209,9 @@ ex. `https://verifier.portal.walt.id/openid4vc/verify/$id`where $id represents t
 ```
 
 ### Walt.Id Endpoint Example
-**Endpoint**: `https://verifier.portal.walt.id/verify/{id}`
+**Endpoint**: `https://verifier.portal.walt.id/openid4vc/verify/{id}`
 
-**In this example**: `"https://verifier.portal.walt.id/verify/ec64a21c-3d81-44f9-8b1d-099c1ec0c7b6"`.
+**In this example**: `"https://verifier.portal.walt.id/openid4vc/verify/ec64a21c-3d81-44f9-8b1d-099c1ec0c7b6"`.
 
 ### PolicyServer Response Example
 ```json
@@ -242,9 +243,9 @@ ex. `https://verifier.portal.walt.id/openid4vc/verify/$id`where $id represents t
 ```
 
 ### Walt.Id Endpoint Example
-**Endpoint**: `https://verifier.portal.walt.id/session/{id}`
+**Endpoint**: `https://verifier.portal.walt.id/openid4vc/session/{id}`
 
-**In this example**: `"https://verifier.portal.walt.id/session/ec64a21c-3d81-44f9-8b1d-099c1ec0c7b6"`.
+**In this example**: `"https://verifier.portal.walt.id/openid4vc/session/ec64a21c-3d81-44f9-8b1d-099c1ec0c7b6"`.
 
 ### PolicyServer Response Example
 ```json
@@ -258,9 +259,40 @@ ex. `https://verifier.portal.walt.id/openid4vc/verify/$id`where $id represents t
 
 ```
 
+
+## 4) getPD
+
+### PolicyServer Endpoint Example
+**Endpoint**: `http://localhost:3000/`
+
+### PolicyServer Expected Payload Example
+```json
+{
+  "action": "getPD",
+   "sessionId": "ec64a21c-3d81-44f9-8b1d-099c1ec0c7b6"
+}
+```
+
+### Walt.Id Endpoint Example
+**Endpoint**: `https://verifier.portal.walt.id/openid4vc/pd/{id}`
+
+**In this example**: `"https://verifier.portal.walt.id/openid4vc/pd/ec64a21c-3d81-44f9-8b1d-099c1ec0c7b6"`.
+
+### PolicyServer Response Example
+```json
+{
+  "success": true,
+  "message": {
+    presentation definition
+  },
+  "httpStatus": 200
+}
+
+```
+
 **success** is true, if **verificationResult** property received from the verifier is also true.
 
-## 4) download
+## 5) download
 
 ### PolicyServer Endpoint Example
 **Endpoint**: `http://localhost:3000/`
@@ -297,7 +329,7 @@ ex. `https://verifier.portal.walt.id/openid4vc/verify/$id`where $id represents t
 **success** is true, if **verificationResult** property in presentation state object is also true.
 
 
-## 5) passthrough
+## 6) passthrough
 
 ### PolicyServer Endpoint Example
 **Endpoint**: `http://localhost:3000/`

@@ -87,6 +87,13 @@
                     }
                   }
                 },
+                "getPD": {
+                  "summary": "getPD action, returns presentation definition",
+                  "value": {
+                    "action": "getPD",
+                      "sessionId": ""
+                  }
+                },
                 "checkSessionId": {
                   "summary": "Check Session Id action, returns presentation state object",
                   "value": {
