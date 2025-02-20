@@ -10,10 +10,18 @@ To get the Policy Server up and running in a Docker container:
 ```
 AUTH_TYPE = "waltid"
 WALTID_VERIFIER_URL="https://verifier.portal.walt.id"
+OCEAN_NODE_URL="http://ocean-node-vm1.oceanenterprise.io:8000"
 WALTID_SUCCESS_REDIRECT_URL="https://example.com/success?id=$id"
-DEFAULT_VP_POLICIES=["expired","signature","revoked-status-list"]
-DEFAULT_VC_POLICIES=["expired","signature","revoked-status-list"]
+WALTID_ERROR_REDIRECT_URL="https://example.com/error?id=$id"
+WALTID_VERIFY_RESPONSE_REDIRECT_URL="http://ocean-node-vm2.oceanenterprise.io:8100/verify/$id"
+WALTID_VERIFY_PRESENTATION_DEFINITION_URL="http://ocean-node-vm2.oceanenterprise.io:8100/pd/$id"
+DEFAULT_VP_POLICIES=["expired","signature","revoked-status-list","not-before"]
+DEFAULT_VC_POLICIES=["expired","signature","revoked-status-list","not-before"]
+ENABLE_LOGS="1"
+MODE_PROXY="1"
+MODE_PS="1"
 ```
+
 1. Start the Docker container:
 
    ```bash

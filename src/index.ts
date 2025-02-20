@@ -34,8 +34,14 @@ async function handlePolicyRequest(
 
 app.use(express.json())
 app.use(requestLogger)
-app.post('/', asyncHandler(handlePolicyRequest))
-if (process.env.OCEAN_NODE_URL) {
+if (process.env.MODE_PS && process.env.MODE_PS === '1') {
+  app.post('/', asyncHandler(handlePolicyRequest))
+}
+if (
+  process.env.OCEAN_NODE_URL &&
+  process.env.MODE_PROXY &&
+  process.env.MODE_PROXY === '1'
+) {
   app.post(
     '/verify/:id',
     express.urlencoded({ extended: true }),

@@ -5,12 +5,14 @@ import { fileURLToPath } from 'url'
 import DailyRotateFile from 'winston-daily-rotate-file'
 import { Request, Response } from 'express'
 
+const isLoggingEnabled = process.env.ENABLE_LOGS && process.env.ENABLE_LOGS === '1'
+
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 const logsDir = path.join(__dirname, '../logs')
 
-if (!fs.existsSync(logsDir)) {
+if (!fs.existsSync(logsDir) && isLoggingEnabled) {
   fs.mkdirSync(logsDir, { recursive: true })
 }
 
@@ -35,14 +37,22 @@ const logger = winston.createLogger({
   transports: [transport, new winston.transports.Console()]
 })
 
-export const logInfo = (message: string | object) =>
-  logger.info(typeof message === 'object' ? JSON.stringify(message, null, 2) : message)
-export const logWarn = (message: string | object) =>
-  logger.warn(typeof message === 'object' ? JSON.stringify(message, null, 2) : message)
-export const logError = (message: string | object) =>
-  logger.error(typeof message === 'object' ? JSON.stringify(message, null, 2) : message)
-export const logDebug = (message: string | object) =>
-  logger.debug(typeof message === 'object' ? JSON.stringify(message, null, 2) : message)
+export const logInfo = (message: string | object) => {
+  if (isLoggingEnabled)
+    logger.info(typeof message === 'object' ? JSON.stringify(message, null, 2) : message)
+}
+export const logWarn = (message: string | object) => {
+  if (isLoggingEnabled)
+    logger.warn(typeof message === 'object' ? JSON.stringify(message, null, 2) : message)
+}
+export const logError = (message: string | object) => {
+  if (isLoggingEnabled)
+    logger.error(typeof message === 'object' ? JSON.stringify(message, null, 2) : message)
+}
+export const logDebug = (message: string | object) => {
+  if (isLoggingEnabled)
+    logger.debug(typeof message === 'object' ? JSON.stringify(message, null, 2) : message)
+}
 
 export default logger
 
