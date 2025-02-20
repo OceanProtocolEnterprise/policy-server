@@ -26,8 +26,13 @@ export class WaltIdPolicyHandler extends PolicyHandler {
 
     const headers = {
       stateId: uuid,
-      successRedirectUri: process.env.WALTID_SUCCESS_REDIRECT_URL || '',
-      errorRedirectUri: process.env.WALTID_ERROR_REDIRECT_URL || ''
+      successRedirectUri: requestPayload.policyServer?.successRedirectUri
+        ? requestPayload.policyServer.successRedirectUri
+        : process.env.WALTID_SUCCESS_REDIRECT_URL || '',
+
+      errorRedirectUri: requestPayload.policyServer?.errorRedirectUri
+        ? requestPayload.policyServer.errorRedirectUri
+        : process.env.WALTID_ERROR_REDIRECT_URL || ''
     }
 
     logInfo({
@@ -45,14 +50,12 @@ export class WaltIdPolicyHandler extends PolicyHandler {
       response: response.data
     })
 
-    const redirectUrl = process.env.WALTID_VERIFY_RESPONSE_REDIRECT_URL.replace(
-      '$id',
-      uuid
-    )
-    const definitionUrl = process.env.WALTID_VERIFY_PRESENTATION_DEFINITION_URL.replace(
-      '$id',
-      uuid
-    )
+    const redirectUrl = requestPayload.policyServer?.responseRedirectUri
+      ? requestPayload.policyServer?.responseRedirectUri.replace('$id', uuid)
+      : process.env.WALTID_VERIFY_RESPONSE_REDIRECT_URL.replace('$id', uuid)
+    const definitionUrl = requestPayload.policyServer?.responseRedirectUri
+      ? requestPayload.policyServer?.presentationDefinitionUri.replace('$id', uuid)
+      : process.env.WALTID_VERIFY_PRESENTATION_DEFINITION_URL.replace('$id', uuid)
     const updatedResponseData = response.data
       .replace(/response_uri=([^&]*)/, `response_uri=${encodeURIComponent(redirectUrl)}`)
       .replace(

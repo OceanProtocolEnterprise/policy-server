@@ -43,6 +43,13 @@ DEFAULT_VC_POLICIES=["expired","signature","revoked-status-list"]
 {
   "action": "initiate",
   "sessionId": "", //optional
+   "policyServer": //optional
+   {
+    "successRedirectUri": "",//optional
+    "errorRedirectUri": "",//optional
+    "responseRedirectUri": "",//optional
+    "presentationDefinitionUri": ""//optional
+    },
   "ddo": {
     "credentialSubject": {
       "credentials": [

@@ -39,6 +39,12 @@
                   "value": {
                     "action": "initiate",
                     "sessionId": "",
+                    "policyServer": {
+                      "successRedirectUri": "",
+                      "errorRedirectUri": "",
+                      "responseRedirectUri": "",
+                      "presentationDefinitionUri": ""
+                    },
                     "ddo": {
                       "credentialSubject": {
                         "credentials": {
