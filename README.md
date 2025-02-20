@@ -33,12 +33,12 @@ MODE_PS="1"
 
 **Actions**
 
-**1. initiate
-2. presentationRequest
-3. getPD
-4. checkSessionId
-5. download
-6. passthrough**
+- `initiate`
+- `getPD`
+- `presentationRequest`
+- `checkSessionId`
+- `download`
+- `passthrough`
 
 
 ## 1) initiate
@@ -51,6 +51,13 @@ MODE_PS="1"
 {
   "action": "initiate",
   "sessionId": "", //optional
+   "policyServer": //optional
+   {
+    "successRedirectUri": "",//optional
+    "errorRedirectUri": "",//optional
+    "responseRedirectUri": "",//optional
+    "presentationDefinitionUri": ""//optional
+    },
   "ddo": {
     "credentialSubject": {
       "credentials": [
