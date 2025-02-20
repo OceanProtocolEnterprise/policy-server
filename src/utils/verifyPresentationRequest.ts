@@ -43,8 +43,15 @@ export async function handleVerifyPresentationRequest(
     status: apiResponse.status,
     data: apiResponse.data
   })
-
-  res.status(apiResponse.status).json(apiResponse.data.message)
+  const statusCode =
+    apiResponse?.data?.success === false ? 500 : apiResponse?.status || 200
+  res
+    .status(statusCode)
+    .json(
+      apiResponse?.data?.success
+        ? apiResponse?.data?.message?.successRedirectUri
+        : apiResponse?.data?.message?.errorRedirectUri || 'Unknown error'
+    )
 }
 
 export async function handleGetPD(
@@ -81,6 +88,7 @@ export async function handleGetPD(
     status: apiResponse.status,
     data: apiResponse.data
   })
-
-  res.status(apiResponse.status).json(apiResponse.data.message)
+  const statusCode =
+    apiResponse?.data?.success === false ? 500 : apiResponse?.status || 200
+  res.status(statusCode).json(apiResponse?.data?.message || 'Unknown error')
 }
