@@ -25,12 +25,11 @@ DEFAULT_VC_POLICIES=["expired","signature","revoked-status-list"]
 
 **Actions**
 
-**1. initiate
-2. presentationRequest
-3. getPD
-4. checkSessionId
-5. download
-6. passthrough**
+- `initiate`
+- `presentationRequest`
+- `checkSessionId`
+- `download`
+- `passthrough`
 
 
 ## 1) initiate
