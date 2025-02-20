@@ -44,7 +44,7 @@ export async function handleVerifyPresentationRequest(
     data: apiResponse.data
   })
 
-  res.status(apiResponse.status).json(apiResponse.data)
+  res.status(apiResponse.status).json(apiResponse.data.message)
 }
 
 export async function handleGetPD(
