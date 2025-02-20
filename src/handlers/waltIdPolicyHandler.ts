@@ -26,7 +26,8 @@ export class WaltIdPolicyHandler extends PolicyHandler {
 
     const headers = {
       stateId: uuid,
-      successRedirectUri: process.env.WALTID_SUCCESS_REDIRECT_URL || ''
+      successRedirectUri: process.env.WALTID_SUCCESS_REDIRECT_URL || '',
+      errorRedirectUri: process.env.WALTID_ERROR_REDIRECT_URL || ''
     }
 
     logInfo({
@@ -119,7 +120,7 @@ export class WaltIdPolicyHandler extends PolicyHandler {
           ))
 
       const responseData = {
-        successUri: response.data,
+        successRedirectUri: response.data,
         sessionId: requestPayload.sessionId
       }
 
@@ -142,7 +143,7 @@ export class WaltIdPolicyHandler extends PolicyHandler {
       })
 
       const responseData = {
-        error: error?.response?.data?.message,
+        errorRedirectUri: error?.response?.data?.message,
         sessionId: requestPayload.sessionId
       }
 

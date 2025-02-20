@@ -82,5 +82,5 @@ export async function handleGetPD(
     data: apiResponse.data
   })
 
-  res.status(apiResponse.status).json(apiResponse.data)
+  res.status(apiResponse.status).json(apiResponse.data.message)
 }
