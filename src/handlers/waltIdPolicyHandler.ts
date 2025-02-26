@@ -114,21 +114,29 @@ export class WaltIdPolicyHandler extends PolicyHandler {
         response: response.data
       })
 
-      const success =
-        !process.env.WALTID_SUCCESS_REDIRECT_URL ||
-        (response.data.redirect_uri &&
-          this.verifySuccessRedirectUri(
-            response.data.redirect_uri,
-            requestPayload.sessionId
-          ))
+      // Cannot be verified anymore, because WALTID_SUCCESS_REDIRECT_URL could be passed in payload
+      //
+      // const success =
+      //   !process.env.WALTID_SUCCESS_REDIRECT_URL ||
+      //   (response.data.redirectUri &&
+      //     this.verifySuccessRedirectUri(
+      //       response.data.redirectUri,
+      //       requestPayload.sessionId
+      //     ))
 
-      const responseData = {
-        successRedirectUri: response.data,
-        sessionId: requestPayload.sessionId
-      }
+      const responseData = response.data.errorMessage
+        ? {
+            errorRedirectUri: response.data.redirectUri,
+            errorMessage: response.data.errorMessage,
+            sessionId: requestPayload.sessionId
+          }
+        : {
+            successRedirectUri: response.data.redirectUri,
+            sessionId: requestPayload.sessionId
+          }
 
       const policyResponse = {
-        success: response.status === 200 && success,
+        success: response.status === 200,
         message: responseData,
         httpStatus: response.status
       }
