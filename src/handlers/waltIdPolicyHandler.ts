@@ -208,6 +208,54 @@ export class WaltIdPolicyHandler extends PolicyHandler {
     return policyResponse
   }
 
+  public async updateDDO(
+    requestPayload: PolicyRequestPayload
+  ): Promise<PolicyRequestResponse> {
+    const policyResponse = {
+      success: true,
+      message: '',
+      httpStatus: 200
+    }
+
+    return await policyResponse
+  }
+
+  public async newDDO(
+    requestPayload: PolicyRequestPayload
+  ): Promise<PolicyRequestResponse> {
+    const policyResponse = {
+      success: true,
+      message: '',
+      httpStatus: 200
+    }
+
+    return await policyResponse
+  }
+
+  public async encrypt(
+    requestPayload: PolicyRequestPayload
+  ): Promise<PolicyRequestResponse> {
+    const policyResponse = {
+      success: true,
+      message: '',
+      httpStatus: 200
+    }
+
+    return await policyResponse
+  }
+
+  public async decrypt(
+    requestPayload: PolicyRequestPayload
+  ): Promise<PolicyRequestResponse> {
+    const policyResponse = {
+      success: true,
+      message: '',
+      httpStatus: 200
+    }
+
+    return await policyResponse
+  }
+
   verifySuccessRedirectUri(redirectUri: string, sessionId: string): boolean {
     const expectedUri = process.env.WALTID_SUCCESS_REDIRECT_URL.replace('$id', sessionId)
     logInfo({

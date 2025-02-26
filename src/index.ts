@@ -9,8 +9,6 @@ import {
   handleVerifyPresentationRequest
 } from './utils/verifyPresentationRequest.js'
 import { downloadLogs } from './utils/logger.js'
-import dotenv from 'dotenv'
-dotenv.config()
 const app = express()
 const authType = process.env.AUTH_TYPE || 'waltid'
 async function handlePolicyRequest(
