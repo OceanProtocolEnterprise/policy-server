@@ -43,10 +43,9 @@ export async function handleVerifyPresentationRequest(
     status: apiResponse.status,
     data: apiResponse.data
   })
-  const statusCode =
-    apiResponse?.data?.success === false ? 500 : apiResponse?.status || 200
+  const statusCode = apiResponse?.status
 
-  const responseData = apiResponse?.data?.success
+  const responseData = apiResponse?.data?.message?.successRedirectUri
     ? {
         redirectUri: apiResponse?.data?.message?.successRedirectUri || ''
       }
