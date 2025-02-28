@@ -45,13 +45,22 @@ export async function handleVerifyPresentationRequest(
   })
   const statusCode =
     apiResponse?.data?.success === false ? 500 : apiResponse?.status || 200
-  res
-    .status(statusCode)
-    .json(
-      apiResponse?.data?.success
+
+  logInfo({
+    message: 'Proxy: response',
+    status: statusCode,
+    data: {
+      redirectUri: apiResponse?.data?.success
         ? apiResponse?.data?.message?.successRedirectUri
         : apiResponse?.data?.message?.errorRedirectUri || 'Unknown error'
-    )
+    }
+  })
+
+  res.status(statusCode).json({
+    redirectUri: apiResponse?.data?.success
+      ? apiResponse?.data?.message?.successRedirectUri
+      : apiResponse?.data?.message?.errorRedirectUri || 'Unknown error'
+  })
 }
 
 export async function handleGetPD(
@@ -90,5 +99,11 @@ export async function handleGetPD(
   })
   const statusCode =
     apiResponse?.data?.success === false ? 500 : apiResponse?.status || 200
+
+  logInfo({
+    message: 'Proxy: response',
+    status: statusCode,
+    data: apiResponse?.data?.message || 'Unknown error'
+  })
   res.status(statusCode).json(apiResponse?.data?.message || 'Unknown error')
 }
