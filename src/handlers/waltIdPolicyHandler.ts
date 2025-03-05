@@ -124,16 +124,10 @@ export class WaltIdPolicyHandler extends PolicyHandler {
       //       requestPayload.sessionId
       //     ))
 
-      const responseData = response.data.errorMessage
-        ? {
-            errorRedirectUri: response.data.redirectUri,
-            errorMessage: response.data.errorMessage,
-            sessionId: requestPayload.sessionId
-          }
-        : {
-            successRedirectUri: response.data.redirectUri,
-            sessionId: requestPayload.sessionId
-          }
+      const responseData = {
+        redirectUri: response.data,
+        sessionId: requestPayload.sessionId
+      }
 
       const policyResponse = {
         success: response.status === 200,

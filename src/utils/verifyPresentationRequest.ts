@@ -45,22 +45,16 @@ export async function handleVerifyPresentationRequest(
   })
   const statusCode = apiResponse?.status
 
-  const responseData = apiResponse?.data?.message?.successRedirectUri
-    ? {
-        redirectUri: apiResponse?.data?.message?.successRedirectUri || ''
-      }
-    : {
-        redirectUri: apiResponse?.data?.message?.errorRedirectUri || '',
-        errorMessage: apiResponse.data.errorMessage || 'Unknown error'
-      }
-
   logInfo({
     message: 'Proxy: response',
     status: statusCode,
-    data: responseData
+    data: { redirectUri: apiResponse?.data?.message?.redirectUri }
   })
 
-  res.status(statusCode).json(responseData)
+  res
+    .status(statusCode)
+    .contentType('text/plain')
+    .send(apiResponse?.data?.message?.redirectUri)
 }
 
 export async function handleGetPD(
