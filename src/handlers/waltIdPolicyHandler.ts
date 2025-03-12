@@ -5,7 +5,6 @@ import { PolicyRequestPayload, PolicyRequestResponse } from '../@types/policy.js
 import { PolicyHandler } from '../policyHandler.js'
 import { buildInvalidRequestMessage } from '../utils/validateRequests.js'
 import { logError, logInfo } from '../utils/logger.js'
-
 export class WaltIdPolicyHandler extends PolicyHandler {
   public async initiate(
     requestPayload: PolicyRequestPayload
@@ -148,7 +147,7 @@ export class WaltIdPolicyHandler extends PolicyHandler {
       })
 
       const responseData = {
-        errorRedirectUri: error?.response?.data?.message,
+        redirectUri: error?.response.data,
         sessionId: requestPayload.sessionId
       }
 

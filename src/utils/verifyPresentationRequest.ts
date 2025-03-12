@@ -1,8 +1,7 @@
 /* eslint-disable camelcase */
 import { Request, Response } from 'express'
 import axios from 'axios'
-import { logInfo } from './logger.js'
-
+import { logError, logInfo } from './logger.js'
 export async function handleVerifyPresentationRequest(
   req: Request<{ id: string }, {}, any>,
   res: Response
@@ -32,29 +31,44 @@ export async function handleVerifyPresentationRequest(
     baseUrl: baseUrl.toString(),
     requestPayload
   })
+  try {
+    const apiResponse = await axios.post(baseUrl.toString(), requestPayload, {
+      headers: { 'Content-Type': 'application/json' }
+    })
 
-  const apiResponse = await axios.post(baseUrl.toString(), requestPayload, {
-    headers: { 'Content-Type': 'application/json' }
-  })
+    logInfo({
+      message: 'Ocean node: response',
+      baseUrl: baseUrl.toString(),
+      status: apiResponse.status,
+      data: apiResponse.data
+    })
+    const statusCode = apiResponse?.status
 
-  logInfo({
-    message: 'Ocean node: response',
-    baseUrl: baseUrl.toString(),
-    status: apiResponse.status,
-    data: apiResponse.data
-  })
-  const statusCode = apiResponse?.status
-
-  logInfo({
-    message: 'Proxy: response',
-    status: statusCode,
-    data: { redirectUri: apiResponse?.data?.message?.redirectUri }
-  })
-
-  res
-    .status(statusCode)
-    .contentType('text/plain')
-    .send(apiResponse?.data?.message?.redirectUri)
+    logInfo({
+      message: 'Proxy: response',
+      status: statusCode,
+      data: { redirectUri: apiResponse?.data?.message?.redirectUri }
+    })
+    res
+      .status(statusCode)
+      .contentType('text/plain')
+      .send(apiResponse?.data?.message?.redirectUri)
+  } catch (error) {
+    logError({
+      message: 'Proxy: response error',
+      status: error?.response?.status,
+      data: { error: error?.response?.data?.message }
+    })
+    logInfo({
+      message: 'Proxy: response',
+      status: error?.response?.status,
+      data: { redirectUri: error?.response?.data?.message?.redirectUri || '' }
+    })
+    res
+      .status(error?.response?.status)
+      .contentType('text/plain')
+      .send(error?.response?.data?.message?.redirectUri || '')
+  }
 }
 
 export async function handleGetPD(
