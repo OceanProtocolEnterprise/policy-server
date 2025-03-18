@@ -1,17 +1,22 @@
 import { PolicyRequestResponse } from '../@types/policy'
+import { logError } from './logger.js'
 
 export function buildInvalidRequestMessage(cause: string): PolicyRequestResponse {
-  return {
+  const response = {
     success: false,
     httpStatus: 400,
     message: cause
   }
+  logError(response)
+  return response
 }
 
 export function buildNotImplementedRequestMessage(): PolicyRequestResponse {
-  return {
+  const response = {
     success: false,
     httpStatus: 501,
     message: 'Not implemented exception'
   }
+  logError(response)
+  return response
 }

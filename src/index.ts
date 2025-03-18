@@ -1,9 +1,14 @@
 import express, { Request, Response } from 'express'
 import swaggerDoc from '../swagger.json' assert { type: 'json' }
 import swaggerUi from 'swagger-ui-express'
-import errorHandler, { asyncHandler } from './utils/middleware.js'
+import { asyncHandler, requestLogger, errorHandler } from './utils/middleware.js'
 import { PolicyRequestPayload, PolicyRequestResponse } from './@types/policy'
 import { PolicyHandlerFactory } from './policyHandlerFactory.js'
+import {
+  handleGetPD,
+  handleVerifyPresentationRequest
+} from './utils/verifyPresentationRequest.js'
+import { downloadLogs } from './utils/logger.js'
 const app = express()
 const authType = process.env.AUTH_TYPE || 'waltid'
 async function handlePolicyRequest(
@@ -27,9 +32,28 @@ async function handlePolicyRequest(
 }
 
 app.use(express.json())
-app.post('/', asyncHandler(handlePolicyRequest))
+app.use(requestLogger)
+if (process.env.MODE_PS && process.env.MODE_PS === '1') {
+  app.post('/', asyncHandler(handlePolicyRequest))
+}
+if (
+  process.env.OCEAN_NODE_URL &&
+  process.env.MODE_PROXY &&
+  process.env.MODE_PROXY === '1'
+) {
+  app.post(
+    '/verify/:id',
+    express.urlencoded({ extended: true }),
+    asyncHandler(handleVerifyPresentationRequest)
+  )
+  app.get('/pd/:id', asyncHandler(handleGetPD))
+}
+if (process.env.ENABLE_LOGS && process.env.ENABLE_LOGS === '1') {
+  app.get('/logs', downloadLogs)
+}
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc))
 app.use(errorHandler)
+
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`)

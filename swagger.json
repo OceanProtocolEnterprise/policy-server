@@ -19,12 +19,10 @@
                   "action": {
                     "type": "string",
                     "enum": [
-                      "newDDO",
-                      "updateDDO",
-                      "initialize",
+                      "initiate",
                       "download",
-                      "encrypt",
-                      "decrypt",
+                      "checkSessionId",
+                      "presentationRequest",
                       "passthrough"
                     ],
                     "description": "Type of policy action to perform"
@@ -36,66 +34,96 @@
                 }
               },
               "examples": {
-                "newDDO": {
-                  "summary": "Called whenever a new DDO is detected by indexer",
+                "initiate": {
+                  "summary": "Initiate action, returns presentation_uri including session_id",
                   "value": {
-                    "action": "newDDO",
-                    "rawDDO": {},
-                    "chainId": 1,
-                    "txId": "0x123",
-                    "eventRaw": "raw event data"
+                    "action": "initiate",
+                    "sessionId": "",
+                    "policyServer": {
+                      "successRedirectUri": "",
+                      "errorRedirectUri": "",
+                      "responseRedirectUri": "",
+                      "presentationDefinitionUri": ""
+                    },
+                    "ddo": {
+                      "credentialSubject": {
+                        "credentials": {
+                          "allow": [
+                            {
+                              "type": "SSIpolicy",
+                              "values": [
+                                {
+                                  "vp_policies": ["signature", "expired"],
+                                  "vc_policies": ["signature", "expired"],
+                                  "request_credentials": [
+                                    {
+                                      "type": "UniversityDegree",
+                                      "format": "jwt_vc_json"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        "services": [
+                          {
+                            "credentials": {
+                              "allow": [
+                                {
+                                  "type": "SSIpolicy",
+                                  "values": [
+                                    {
+                                      "vp_policies": ["signature", "expired"],
+                                      "vc_policies": ["signature", "expired"],
+                                      "request_credentials": [
+                                        {
+                                          "type": "VerifiableId",
+                                          "format": "jwt_vc_json"
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
                   }
                 },
-                "updateDDO": {
-                  "summary": "Called whenever a DDO is updated by indexer",
+                "getPD": {
+                  "summary": "getPD action, returns presentation definition",
                   "value": {
-                    "action": "updateDDO",
-                    "rawDDO": {},
-                    "chainId": 1,
-                    "txId": "0x123",
-                    "eventRaw": "raw event data"
+                    "action": "getPD",
+                      "sessionId": ""
                   }
                 },
-                "initialize": {
-                  "summary": "Called whenever a new initialize command is received by Ocean Node",
+                "checkSessionId": {
+                  "summary": "Check Session Id action, returns presentation state object",
                   "value": {
-                    "action": "initialize",
-                    "documentId": "did:op:123",
-                    "ddo": {},
-                    "serviceId": "0x123",
-                    "consumerAddress": "0x123",
-                    "policyServer": {}
+                    "action": "checkSessionId",
+                      "sessionId": ""
+                  }
+                },
+                "presentationRequest": {
+                  "summary": "Presentation Request action, fulfills presentation request",
+                  "value": {
+                    "action": "presentationRequest",
+                    "sessionId": "",
+                      "vp_token": null,
+                      "response": null,
+                      "presentation_submission": null
                   }
                 },
                 "download": {
-                  "summary": "Called whenever a new download command is received by Ocean Node",
+                  "summary": "Download action, returns verification result",
                   "value": {
                     "action": "download",
-                    "documentId": "did:op:123",
-                    "ddo": {},
-                    "serviceId": "0x123",
-                    "fileIndex": 1,
-                    "transferTxId": "0x123",
-                    "consumerAddress": "0x123",
-                    "policyServer": {}
-                  }
-                },
-                "encrypt": {
-                  "summary": "Called whenever a new encrypt command is received by Ocean Node",
-                  "value": {
-                    "action": "encrypt",
-                    "policyServer": {}
-                  }
-                },
-                "decrypt": {
-                  "summary": "Called whenever a new decrypt command is received by Ocean Node",
-                  "value": {
-                    "action": "decrypt",
-                    "decrypterAddress": "0x123",
-                    "chainId": 1,
-                    "transactionId": "0x123",
-                    "dataNftAddress": "0x123",
-                    "policyServer": {}
+                    "policyServer":{
+                      "sessionId": ""
+                    }
                   }
                 },
                 "passthrough": {
@@ -104,8 +132,7 @@
                     "action": "passthrough",
                     "url": "/url",
                     "httpMethod": "GET",
-                    "body": {},
-                    "policyServer": {}
+                    "body": {}
                   }
                 }
               }
@@ -133,6 +160,74 @@
                       "type": "integer",
                       "format": "int32",
                       "description": "HTTP status code of the response"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/logs": {
+      "get": {
+        "summary": "Download logs",
+        "description": "Download logs for a specific date or today's logs if no date is provided.",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "example": ""
+            },
+            "description": "Date in DD-MM-YYYY format to download logs for a specific day."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Log file",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Log file not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
                     }
                   }
                 }
