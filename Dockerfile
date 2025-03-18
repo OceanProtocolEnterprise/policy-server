@@ -36,9 +36,6 @@ RUN npm run build
 EXPOSE 8000
 
 # Set environment variables
-ENV NODE_ENV=production \
-    PORT=8000 \
-    AUTH_TYPE=waltid
-
+ENV NODE_ENV=production 
 # Run the application directly from the dist directory
 CMD ["npm","run","start"]
