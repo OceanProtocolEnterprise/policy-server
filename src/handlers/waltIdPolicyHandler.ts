@@ -297,6 +297,14 @@ export class WaltIdPolicyHandler extends PolicyHandler {
   public async download(
     requestPayload: PolicyRequestPayload
   ): Promise<PolicyRequestResponse> {
+    if (typeof requestPayload.policyServer === 'string') {
+      try {
+        requestPayload.policyServer = JSON.parse(requestPayload.policyServer)
+      } catch (error) {
+        return buildInvalidRequestMessage('Failed to parse policyServer JSON string')
+      }
+    }
+
     if (!requestPayload.policyServer?.sessionId)
       return buildInvalidRequestMessage('Request body does not contain sessionId')
 
