@@ -3,16 +3,28 @@ import axios from 'axios'
 import { randomUUID } from 'crypto'
 import { PolicyRequestPayload, PolicyRequestResponse } from '../@types/policy.js'
 import { PolicyHandler } from '../policyHandler.js'
-import { buildInvalidRequestMessage } from '../utils/validateRequests.js'
+import {
+  buildInvalidRequestMessage,
+  buildVerificationErrorRequestMessage
+} from '../utils/validateRequests.js'
 import { logError, logInfo } from '../utils/logger.js'
 export class WaltIdPolicyHandler extends PolicyHandler {
   public async initiate(
     requestPayload: PolicyRequestPayload
   ): Promise<PolicyRequestResponse> {
-    if (!requestPayload.ddo.credentialSubject)
-      return buildInvalidRequestMessage(
-        'Request body does not contain ddo.credentialSubject'
+    // if (!requestPayload.ddo.credentialSubject)
+    //   return buildInvalidRequestMessage(
+    //     'Request body does not contain ddo.credentialSubject'
+    //   )
+
+    const web3VerificationResult = this.verifyWeb3Address(requestPayload)
+
+    if (!web3VerificationResult.success) {
+      return buildVerificationErrorRequestMessage(
+        web3VerificationResult.message || 'Web3 Address verification error',
+        web3VerificationResult.code || 401
       )
+    }
 
     const url = new URL(`/openid4vc/verify`, process.env.WALTID_VERIFIER_URL)
 
@@ -305,8 +317,17 @@ export class WaltIdPolicyHandler extends PolicyHandler {
       }
     }
 
-    if (!requestPayload.policyServer?.sessionId)
-      return buildInvalidRequestMessage('Request body does not contain sessionId')
+    // if (!requestPayload.policyServer?.sessionId)
+    //   return buildInvalidRequestMessage('Request body does not contain sessionId')
+
+    const web3VerificationResult = this.verifyWeb3Address(requestPayload)
+
+    if (!web3VerificationResult.success) {
+      return buildVerificationErrorRequestMessage(
+        web3VerificationResult.message || 'Web3 Address verification error',
+        web3VerificationResult.code || 401
+      )
+    }
 
     const url = new URL(
       `/openid4vc/session/${requestPayload.policyServer.sessionId}`,
@@ -467,5 +488,13 @@ export class WaltIdPolicyHandler extends PolicyHandler {
       vc_policies: Array.from(vc_policies),
       request_credentials: Array.from(request_credentialsMap.values())
     }
+  }
+
+  private verifyWeb3Address(requestPayload: any): {
+    success: boolean
+    message?: string
+    code?: number
+  } {
+    return { success: true }
   }
 }

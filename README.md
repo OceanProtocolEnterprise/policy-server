@@ -54,6 +54,8 @@ MODE_PS="1"
 ```json
 {
   "action": "initiate",
+  "serviceId": "0x123",
+  "consumerAddress": "0x123",
   "sessionId": "", //optional
    "policyServer": //optional
    {
@@ -320,6 +322,9 @@ ex. `https://verifier.portal.walt.id/openid4vc/verify/$id`and `http://ocean-node
 ```json
 {
   "action": "download",
+  "serviceId": "0x123",
+  "consumerAddress": "0x123",
+  "ddo":{},
   "policyServer":
   {
     "sessionId": "ec64a21c-3d81-44f9-8b1d-099c1ec0c7b6"

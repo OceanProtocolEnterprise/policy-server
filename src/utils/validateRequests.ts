@@ -20,3 +20,16 @@ export function buildNotImplementedRequestMessage(): PolicyRequestResponse {
   logError(response)
   return response
 }
+
+export function buildVerificationErrorRequestMessage(
+  cause: string,
+  code: number
+): PolicyRequestResponse {
+  const response = {
+    success: false,
+    httpStatus: code,
+    message: cause
+  }
+  logError(response)
+  return response
+}
