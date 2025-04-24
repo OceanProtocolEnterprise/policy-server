@@ -26,66 +26,95 @@ export class WaltIdPolicyHandler extends PolicyHandler {
       )
     }
 
-    const url = new URL(`/openid4vc/verify`, process.env.WALTID_VERIFIER_URL)
+    const checkSSIPolicy = this.hasSSIPolicyToBeChecked(requestPayload)
 
-    const requestCredentialsBody = this.parserequest_credentials(requestPayload)
-
-    const uuid =
-      requestPayload.sessionId && requestPayload.sessionId !== ''
-        ? requestPayload.sessionId
-        : randomUUID()
-
-    const headers = {
-      stateId: uuid,
-      successRedirectUri: requestPayload.policyServer?.successRedirectUri
-        ? requestPayload.policyServer.successRedirectUri
-        : process.env.WALTID_SUCCESS_REDIRECT_URL || '',
-
-      errorRedirectUri: requestPayload.policyServer?.errorRedirectUri
-        ? requestPayload.policyServer.errorRedirectUri
-        : process.env.WALTID_ERROR_REDIRECT_URL || ''
-    }
-
-    logInfo({
-      message: 'WaltId: payload',
-      url: url.toString(),
-      headers,
-      requestCredentialsBody
-    })
-
-    const response = await axios.post(url.toString(), requestCredentialsBody, { headers })
-
-    logInfo({
-      message: 'WaltId: response',
-      url: url.toString(),
-      response: response.data
-    })
-
-    const redirectUrl = requestPayload.policyServer?.responseRedirectUri
-      ? requestPayload.policyServer?.responseRedirectUri.replace('$id', uuid)
-      : process.env.WALTID_VERIFY_RESPONSE_REDIRECT_URL.replace('$id', uuid)
-    const definitionUrl = requestPayload.policyServer?.responseRedirectUri
-      ? requestPayload.policyServer?.presentationDefinitionUri.replace('$id', uuid)
-      : process.env.WALTID_VERIFY_PRESENTATION_DEFINITION_URL.replace('$id', uuid)
-    const updatedResponseData = response.data
-      .replace(/response_uri=([^&]*)/, `response_uri=${encodeURIComponent(redirectUrl)}`)
-      .replace(
-        /presentation_definition_uri=([^&]*)/,
-        `presentation_definition_uri=${encodeURIComponent(definitionUrl)}`
+    if (checkSSIPolicy.error) {
+      return buildVerificationErrorRequestMessage(
+        'SSIpolicy was found, but failed to fetch request credentials',
+        401
       )
-
-    const policyResponse = {
-      success: response.status === 200,
-      message: updatedResponseData,
-      httpStatus: response.status
     }
 
-    logInfo({
-      message: 'PS: response',
-      policyResponse
-    })
+    if (checkSSIPolicy.checkSSIPolicy) {
+      const url = new URL(`/openid4vc/verify`, process.env.WALTID_VERIFIER_URL)
 
-    return policyResponse
+      const requestCredentialsBody = this.parseRequestCredentials(requestPayload)
+
+      const uuid =
+        requestPayload.sessionId && requestPayload.sessionId !== ''
+          ? requestPayload.sessionId
+          : randomUUID()
+
+      const headers = {
+        stateId: uuid,
+        successRedirectUri: requestPayload.policyServer?.successRedirectUri
+          ? requestPayload.policyServer.successRedirectUri
+          : process.env.WALTID_SUCCESS_REDIRECT_URL || '',
+
+        errorRedirectUri: requestPayload.policyServer?.errorRedirectUri
+          ? requestPayload.policyServer.errorRedirectUri
+          : process.env.WALTID_ERROR_REDIRECT_URL || ''
+      }
+
+      logInfo({
+        message: 'WaltId: payload',
+        url: url.toString(),
+        headers,
+        requestCredentialsBody
+      })
+
+      const response = await axios.post(url.toString(), requestCredentialsBody, {
+        headers
+      })
+
+      logInfo({
+        message: 'WaltId: response',
+        url: url.toString(),
+        response: response.data
+      })
+
+      const redirectUrl = requestPayload.policyServer?.responseRedirectUri
+        ? requestPayload.policyServer?.responseRedirectUri.replace('$id', uuid)
+        : process.env.WALTID_VERIFY_RESPONSE_REDIRECT_URL.replace('$id', uuid)
+      const definitionUrl = requestPayload.policyServer?.responseRedirectUri
+        ? requestPayload.policyServer?.presentationDefinitionUri.replace('$id', uuid)
+        : process.env.WALTID_VERIFY_PRESENTATION_DEFINITION_URL.replace('$id', uuid)
+      const updatedResponseData = response.data
+        .replace(
+          /response_uri=([^&]*)/,
+          `response_uri=${encodeURIComponent(redirectUrl)}`
+        )
+        .replace(
+          /presentation_definition_uri=([^&]*)/,
+          `presentation_definition_uri=${encodeURIComponent(definitionUrl)}`
+        )
+
+      const policyResponse = {
+        success: response.status === 200,
+        message: updatedResponseData,
+        httpStatus: response.status
+      }
+
+      logInfo({
+        message: 'PS: response',
+        policyResponse
+      })
+
+      return policyResponse
+    } else {
+      const policyResponse = {
+        success: true,
+        message: '',
+        httpStatus: 200
+      }
+
+      logInfo({
+        message: 'PS: response',
+        policyResponse
+      })
+
+      return policyResponse
+    }
   }
 
   public async presentationRequest(
@@ -295,10 +324,11 @@ export class WaltIdPolicyHandler extends PolicyHandler {
     })
 
     const policyResponse = {
-      success: response.status === 200 && response.data.verificationResult,
+      success: response.status === 200 && response.data.verificationResult === true,
       message: response.data,
-      httpStatus: response.status
+      httpStatus: response.data.verificationResult === true ? response.status : 401
     }
+
     logInfo({
       message: 'PS: response',
       policyResponse
@@ -317,9 +347,6 @@ export class WaltIdPolicyHandler extends PolicyHandler {
       }
     }
 
-    // if (!requestPayload.policyServer?.sessionId)
-    //   return buildInvalidRequestMessage('Request body does not contain sessionId')
-
     const web3VerificationResult = this.verifyWeb3Address(requestPayload)
 
     if (!web3VerificationResult.success) {
@@ -329,34 +356,61 @@ export class WaltIdPolicyHandler extends PolicyHandler {
       )
     }
 
-    const url = new URL(
-      `/openid4vc/session/${requestPayload.policyServer.sessionId}`,
-      process.env.WALTID_VERIFIER_URL
-    )
+    const checkSSIPolicy = this.hasSSIPolicyToBeChecked(requestPayload)
 
-    logInfo({
-      message: 'WaltId: payload',
-      url
-    })
-
-    const response = await axios.get(url.toString())
-
-    logInfo({
-      message: 'WaltId: response',
-      url: url.toString(),
-      response: response.data
-    })
-
-    const policyResponse = {
-      success: response.status === 200 && response.data.verificationResult,
-      message: response.data,
-      httpStatus: response.status
+    if (checkSSIPolicy.error) {
+      return buildVerificationErrorRequestMessage(
+        'SSIpolicy was found, but failed to fetch request credentials',
+        401
+      )
     }
-    logInfo({
-      message: 'PS: response',
-      policyResponse
-    })
-    return policyResponse
+
+    if (checkSSIPolicy.checkSSIPolicy) {
+      if (!requestPayload.policyServer?.sessionId)
+        return buildInvalidRequestMessage('Request body does not contain sessionId')
+
+      const url = new URL(
+        `/openid4vc/session/${requestPayload.policyServer.sessionId}`,
+        process.env.WALTID_VERIFIER_URL
+      )
+
+      logInfo({
+        message: 'WaltId: payload',
+        url
+      })
+
+      const response = await axios.get(url.toString())
+
+      logInfo({
+        message: 'WaltId: response',
+        url: url.toString(),
+        response: response.data
+      })
+
+      const policyResponse = {
+        success: response.status === 200 && response.data.verificationResult === true,
+        message: response.data,
+        httpStatus: response.data.verificationResult === true ? response.status : 401
+      }
+      logInfo({
+        message: 'PS: response',
+        policyResponse
+      })
+      return policyResponse
+    } else {
+      const policyResponse = {
+        success: true,
+        message: '',
+        httpStatus: 200
+      }
+
+      logInfo({
+        message: 'PS: response',
+        policyResponse
+      })
+
+      return policyResponse
+    }
   }
 
   public async passthrough(
@@ -399,7 +453,46 @@ export class WaltIdPolicyHandler extends PolicyHandler {
     return policyResponse
   }
 
-  private parserequest_credentials(requestPayload: any): any {
+  private hasSSIPolicyToBeChecked(requestPayload: any): {
+    checkSSIPolicy: boolean
+    error?: boolean
+  } {
+    const credentialSubject = requestPayload?.ddo?.credentialSubject
+    const serviceId = requestPayload?.serviceId
+    if (!credentialSubject) return { checkSSIPolicy: false }
+
+    const targetType = 'SSIpolicy'
+
+    const assetPolicies =
+      credentialSubject.credentials?.allow?.filter(
+        (item: any) => item?.type === targetType
+      ) ?? []
+
+    const service = credentialSubject.services?.find((s: any) => s.id === serviceId)
+
+    const servicePolicies =
+      service?.credentials?.allow?.filter((item: any) => item?.type === targetType) ?? []
+
+    const combinedPolicies = [...assetPolicies, ...servicePolicies]
+
+    for (const policy of combinedPolicies) {
+      if (!Array.isArray(policy.values)) continue
+
+      for (const val of policy.values) {
+        if (
+          val?.request_credentials &&
+          Array.isArray(val.request_credentials) &&
+          val.request_credentials.length > 0
+        ) {
+          return { checkSSIPolicy: true }
+        }
+      }
+    }
+
+    return { checkSSIPolicy: false, error: combinedPolicies.length > 0 }
+  }
+
+  private parseRequestCredentials(requestPayload: any): any {
     const credentialSubject = requestPayload?.ddo?.credentialSubject
     const targetType = 'SSIpolicy'
     const credentialSubjectCredentials =
@@ -409,6 +502,7 @@ export class WaltIdPolicyHandler extends PolicyHandler {
 
     const serviceCredentials =
       credentialSubject?.services
+        ?.filter((service: any) => service?.id === requestPayload.serviceId)
         ?.flatMap(
           (service: any) =>
             service?.credentials?.allow?.filter(
@@ -582,8 +676,8 @@ export class WaltIdPolicyHandler extends PolicyHandler {
     const serviceMatch = serviceAllowsAll || serviceAllowList.includes(consumerAddress)
 
     if (assetMatch && serviceMatch) {
-    return { success: true }
-  }
+      return { success: true }
+    }
 
     return {
       success: false,
