@@ -39,8 +39,8 @@
                   "value": {
                     "action": "initiate",
                     "sessionId": "",
-                    "serviceId": "",
-                    "consumerAddress": "",
+                    "serviceId": "ff294c2e2c7d01bd5f9701abc117737917bb1f91044ba6b2d0903fc806db0d65",
+                    "consumerAddress": "0xd727fb9be39fa019d7c02fea19e54d688da3a662",
                     "policyServer": {
                       "successRedirectUri": "",
                       "errorRedirectUri": "",
@@ -252,7 +252,6 @@
                           }
                         ],
                         "nftAddress": "0x09e939308A16e1B27088bbf6932D91EC8b5F42b8",
-                        
                         "nft": {
                           "state": 0,
                           "address": "0x09e939308A16e1B27088bbf6932D91EC8b5F42b8",
@@ -416,8 +415,15 @@
                   "summary": "Download action, returns verification result",
                   "value": {
                     "action": "download",
-                    "serviceId": "",
-                    "consumerAddress": "",
+                    "serviceId": "ff294c2e2c7d01bd5f9701abc117737917bb1f91044ba6b2d0903fc806db0d65",
+                    "consumerAddress": "0xd727fb9be39fa019d7c02fea19e54d688da3a662",
+                    "policyServer": {
+                      "successRedirectUri": "",
+                      "sessionId": "",
+                      "errorRedirectUri": "",
+                      "responseRedirectUri": "",
+                      "presentationDefinitionUri": ""
+                    },
                     "ddo": {
                       "@context": [
                         "https://www.w3.org/ns/credentials/v2"
@@ -623,7 +629,6 @@
                           }
                         ],
                         "nftAddress": "0x09e939308A16e1B27088bbf6932D91EC8b5F42b8",
-                        
                         "nft": {
                           "state": 0,
                           "address": "0x09e939308A16e1B27088bbf6932D91EC8b5F42b8",
@@ -756,9 +761,6 @@
                           "publisherMarketOrderFee": "0"
                         }
                       ]
-                    },
-                    "policyServer":{
-                      "sessionId": ""
                     }
                   }
                 },

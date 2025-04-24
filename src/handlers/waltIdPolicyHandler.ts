@@ -495,6 +495,125 @@ export class WaltIdPolicyHandler extends PolicyHandler {
     message?: string
     code?: number
   } {
+    const consumerAddress = requestPayload.consumerAddress?.toLowerCase()
+    const { ddo } = requestPayload
+    const { serviceId } = requestPayload
+
+    if (!consumerAddress || !ddo || !serviceId) {
+      return {
+        success: false,
+        message: 'Missing required fields (consumerAddress, ddo, serviceId).',
+        code: 400
+      }
+    }
+
+    const assetCredentials = ddo.credentialSubject?.credentials || {}
+    const assetAllowList = this.extractAddressList(assetCredentials.allow)
+    const assetDenyList = this.extractAddressList(assetCredentials.deny)
+
+    const service = ddo.credentialSubject?.services?.find((s: any) => s.id === serviceId)
+
+    if (!service) {
+      return { success: false, message: 'Service not found in DDO.', code: 400 }
+    }
+
+    const serviceAllowList = this.extractAddressList(service.credentials?.allow)
+    const serviceDenyList = this.extractAddressList(service.credentials?.deny)
+
+    const serviceDefinesAddressCredentials =
+      this.hasAddressCredential(service.credentials?.allow) ||
+      this.hasAddressCredential(service.credentials?.deny)
+
+    if (
+      assetDenyList.includes(consumerAddress) ||
+      serviceDenyList.includes(consumerAddress)
+    ) {
+      return {
+        success: false,
+        message: 'Access denied: Address is in deny list.',
+        code: 401
+      }
+    }
+
+    if (
+      this.hasAddressCredential(assetCredentials.allow) &&
+      assetAllowList.length === 0
+    ) {
+      return {
+        success: false,
+        message: 'Access denied: Empty allow list at asset level.',
+        code: 401
+      }
+    }
+
+    if (
+      this.hasAddressCredential(service.credentials?.allow) &&
+      serviceAllowList.length === 0
+    ) {
+      return {
+        success: false,
+        message: 'Access denied: Empty allow list at service level.',
+        code: 401
+      }
+    }
+
+    const assetAllowsAll = assetAllowList.includes('*')
+    const serviceAllowsAll = serviceAllowList.includes('*')
+
+    if (!serviceDefinesAddressCredentials) {
+      if (assetAllowsAll) {
+        return { success: true }
+      }
+
+      return assetAllowList.includes(consumerAddress)
+        ? { success: true }
+        : {
+            success: false,
+            message: 'Access denied: Address not allowed at asset level.',
+            code: 401
+          }
+    }
+
+    if (assetAllowsAll && serviceAllowsAll) {
+      return { success: true }
+    }
+
+    const assetMatch = assetAllowsAll || assetAllowList.includes(consumerAddress)
+    const serviceMatch = serviceAllowsAll || serviceAllowList.includes(consumerAddress)
+
+    if (assetMatch && serviceMatch) {
     return { success: true }
+  }
+
+    return {
+      success: false,
+      message: 'Access denied: Address not in both allow lists.',
+      code: 401
+    }
+  }
+
+  private extractAddressList(credentialsList: any[]): string[] {
+    if (!Array.isArray(credentialsList)) return []
+
+    const addressList: string[] = []
+
+    for (const credential of credentialsList) {
+      if (credential.type === 'address' && Array.isArray(credential.values)) {
+        for (const value of credential.values) {
+          if (typeof value === 'string') {
+            addressList.push(value.toLowerCase())
+          } else if (value?.address && typeof value.address === 'string') {
+            addressList.push(value.address.toLowerCase())
+          }
+        }
+      }
+    }
+
+    return addressList
+  }
+
+  private hasAddressCredential(credentialsList: any[]): boolean {
+    if (!Array.isArray(credentialsList)) return false
+    return credentialsList.some((c) => c.type === 'address')
   }
 }
