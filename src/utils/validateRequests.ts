@@ -23,12 +23,16 @@ export function buildNotImplementedRequestMessage(): PolicyRequestResponse {
 
 export function buildVerificationErrorRequestMessage(
   cause: string,
-  code: number
+  code: number,
+  redirectUri?: string
 ): PolicyRequestResponse {
   const response = {
     success: false,
     httpStatus: code,
-    message: cause
+    message: {
+      redirectUri,
+      error: cause
+    }
   }
   logError(response)
   return response

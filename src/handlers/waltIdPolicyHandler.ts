@@ -8,6 +8,7 @@ import {
   buildVerificationErrorRequestMessage
 } from '../utils/validateRequests.js'
 import { logError, logInfo } from '../utils/logger.js'
+import { error } from 'console'
 export class WaltIdPolicyHandler extends PolicyHandler {
   public async initiate(
     requestPayload: PolicyRequestPayload
@@ -17,12 +18,26 @@ export class WaltIdPolicyHandler extends PolicyHandler {
     //     'Request body does not contain ddo.credentialSubject'
     //   )
 
+    const uuid =
+      requestPayload.sessionId && requestPayload.sessionId !== ''
+        ? requestPayload.sessionId
+        : randomUUID()
+
+    const successRedirectUri = requestPayload.policyServer?.successRedirectUri
+      ? requestPayload.policyServer.successRedirectUri
+      : process.env.WALTID_SUCCESS_REDIRECT_URL || ''
+
+    const errorRedirectUri = requestPayload.policyServer?.errorRedirectUri
+      ? requestPayload.policyServer.errorRedirectUri
+      : process.env.WALTID_ERROR_REDIRECT_URL || ''
+
     const web3VerificationResult = this.verifyWeb3Address(requestPayload)
 
     if (!web3VerificationResult.success) {
       return buildVerificationErrorRequestMessage(
         web3VerificationResult.message || 'Web3 Address verification error',
-        web3VerificationResult.code || 401
+        web3VerificationResult.code || 401,
+        errorRedirectUri.replace('$id', uuid)
       )
     }
 
@@ -31,7 +46,8 @@ export class WaltIdPolicyHandler extends PolicyHandler {
     if (checkSSIPolicy.error) {
       return buildVerificationErrorRequestMessage(
         'SSIpolicy was found, but failed to fetch request credentials',
-        401
+        401,
+        errorRedirectUri.replace('$id', uuid)
       )
     }
 
@@ -40,20 +56,10 @@ export class WaltIdPolicyHandler extends PolicyHandler {
 
       const requestCredentialsBody = this.parseRequestCredentials(requestPayload)
 
-      const uuid =
-        requestPayload.sessionId && requestPayload.sessionId !== ''
-          ? requestPayload.sessionId
-          : randomUUID()
-
       const headers = {
         stateId: uuid,
-        successRedirectUri: requestPayload.policyServer?.successRedirectUri
-          ? requestPayload.policyServer.successRedirectUri
-          : process.env.WALTID_SUCCESS_REDIRECT_URL || '',
-
-        errorRedirectUri: requestPayload.policyServer?.errorRedirectUri
-          ? requestPayload.policyServer.errorRedirectUri
-          : process.env.WALTID_ERROR_REDIRECT_URL || ''
+        successRedirectUri,
+        errorRedirectUri
       }
 
       logInfo({
@@ -104,7 +110,9 @@ export class WaltIdPolicyHandler extends PolicyHandler {
     } else {
       const policyResponse = {
         success: true,
-        message: '',
+        message: {
+          redirectUri: successRedirectUri.replace('$id', uuid)
+        },
         httpStatus: 200
       }
 
@@ -347,12 +355,21 @@ export class WaltIdPolicyHandler extends PolicyHandler {
       }
     }
 
+    const successRedirectUri = requestPayload.policyServer?.successRedirectUri
+      ? requestPayload.policyServer.successRedirectUri
+      : process.env.WALTID_SUCCESS_REDIRECT_URL || ''
+
+    const errorRedirectUri = requestPayload.policyServer?.errorRedirectUri
+      ? requestPayload.policyServer.errorRedirectUri
+      : process.env.WALTID_ERROR_REDIRECT_URL || ''
+
     const web3VerificationResult = this.verifyWeb3Address(requestPayload)
 
     if (!web3VerificationResult.success) {
       return buildVerificationErrorRequestMessage(
         web3VerificationResult.message || 'Web3 Address verification error',
-        web3VerificationResult.code || 401
+        web3VerificationResult.code || 401,
+        errorRedirectUri.replace('$id', requestPayload.policyServer.sessionId || '')
       )
     }
 
@@ -361,7 +378,8 @@ export class WaltIdPolicyHandler extends PolicyHandler {
     if (checkSSIPolicy.error) {
       return buildVerificationErrorRequestMessage(
         'SSIpolicy was found, but failed to fetch request credentials',
-        401
+        401,
+        errorRedirectUri.replace('$id', requestPayload.policyServer.sessionId || '')
       )
     }
 
@@ -379,28 +397,47 @@ export class WaltIdPolicyHandler extends PolicyHandler {
         url
       })
 
-      const response = await axios.get(url.toString())
+      try {
+        const response = await axios.get(url.toString())
 
-      logInfo({
-        message: 'WaltId: response',
-        url: url.toString(),
-        response: response.data
-      })
+        logInfo({
+          message: 'WaltId: response',
+          url: url.toString(),
+          response: response.data
+        })
 
-      const policyResponse = {
-        success: response.status === 200 && response.data.verificationResult === true,
-        message: response.data,
-        httpStatus: response.data.verificationResult === true ? response.status : 401
+        const policyResponse = {
+          success: response.status === 200 && response.data.verificationResult === true,
+          message: response.data,
+          httpStatus: response.data.verificationResult === true ? response.status : 401
+        }
+        logInfo({
+          message: 'PS: response',
+          policyResponse
+        })
+        return policyResponse
+      } catch (e) {
+        return {
+          success: false,
+          httpStatus: e?.response?.status || 500,
+          message: {
+            error: e?.response?.data?.message || 'Unknown error',
+            redirectUri: errorRedirectUri.replace(
+              '$id',
+              requestPayload.policyServer.sessionId || ''
+            )
+          }
+        }
       }
-      logInfo({
-        message: 'PS: response',
-        policyResponse
-      })
-      return policyResponse
     } else {
       const policyResponse = {
         success: true,
-        message: '',
+        message: {
+          redirectUri: successRedirectUri.replace(
+            '$id',
+            requestPayload.policyServer.sessionId || ''
+          )
+        },
         httpStatus: 200
       }
 
