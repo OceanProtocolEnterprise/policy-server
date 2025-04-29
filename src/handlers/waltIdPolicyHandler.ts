@@ -8,7 +8,6 @@ import {
   buildVerificationErrorRequestMessage
 } from '../utils/validateRequests.js'
 import { logError, logInfo } from '../utils/logger.js'
-import { error } from 'console'
 export class WaltIdPolicyHandler extends PolicyHandler {
   public async initiate(
     requestPayload: PolicyRequestPayload
