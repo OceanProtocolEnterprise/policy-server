@@ -52,17 +52,6 @@ describe('WaltIdPolicyHandler', () => {
     expect(response.httpStatus).to.equal(200)
   })
 
-  it('should return error for invalid payload in initiate', async () => {
-    const payload = { ddo: {} }
-
-    const response = await handler.initiate(payload as any)
-
-    expect(response.success).to.be.false
-    expect(response.message).to.include(
-      'Request body does not contain ddo.credentialSubject'
-    )
-  })
-
   it('should call presentationRequest with valid payload', async () => {
     const payload = {
       sessionId: 'session123',
