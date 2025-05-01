@@ -5,18 +5,15 @@ import { PolicyRequestPayload, PolicyRequestResponse } from '../@types/policy.js
 import { PolicyHandler } from '../policyHandler.js'
 import {
   buildInvalidRequestMessage,
-  buildVerificationErrorRequestMessage
+  buildVerificationErrorRequestMessage,
+  ERROR_CODES
 } from '../utils/validateRequests.js'
 import { logError, logInfo } from '../utils/logger.js'
+
 export class WaltIdPolicyHandler extends PolicyHandler {
   public async initiate(
     requestPayload: PolicyRequestPayload
   ): Promise<PolicyRequestResponse> {
-    // if (!requestPayload.ddo.credentialSubject)
-    //   return buildInvalidRequestMessage(
-    //     'Request body does not contain ddo.credentialSubject'
-    //   )
-
     const uuid =
       requestPayload.sessionId && requestPayload.sessionId !== ''
         ? requestPayload.sessionId
@@ -35,7 +32,7 @@ export class WaltIdPolicyHandler extends PolicyHandler {
     if (!web3VerificationResult.success) {
       return buildVerificationErrorRequestMessage(
         web3VerificationResult.message || 'Web3 Address verification error',
-        web3VerificationResult.code || 401,
+        web3VerificationResult.code || ERROR_CODES.UNKNOWN_ERROR,
         errorRedirectUri.replace('$id', uuid)
       )
     }
@@ -45,7 +42,7 @@ export class WaltIdPolicyHandler extends PolicyHandler {
     if (checkSSIPolicy.error) {
       return buildVerificationErrorRequestMessage(
         'SSIpolicy was found, but failed to fetch request credentials',
-        401,
+        ERROR_CODES.CREDENTIAL_FETCH_FAILED,
         errorRedirectUri.replace('$id', uuid)
       )
     }
@@ -81,9 +78,11 @@ export class WaltIdPolicyHandler extends PolicyHandler {
       const redirectUrl = requestPayload.policyServer?.responseRedirectUri
         ? requestPayload.policyServer?.responseRedirectUri.replace('$id', uuid)
         : process.env.WALTID_VERIFY_RESPONSE_REDIRECT_URL.replace('$id', uuid)
+
       const definitionUrl = requestPayload.policyServer?.responseRedirectUri
         ? requestPayload.policyServer?.presentationDefinitionUri.replace('$id', uuid)
         : process.env.WALTID_VERIFY_PRESENTATION_DEFINITION_URL.replace('$id', uuid)
+
       const updatedResponseData = response.data
         .replace(
           /response_uri=([^&]*)/,
@@ -100,11 +99,7 @@ export class WaltIdPolicyHandler extends PolicyHandler {
         httpStatus: response.status
       }
 
-      logInfo({
-        message: 'PS: response',
-        policyResponse
-      })
-
+      logInfo({ message: 'PS: response', policyResponse })
       return policyResponse
     } else {
       const policyResponse = {
@@ -115,11 +110,7 @@ export class WaltIdPolicyHandler extends PolicyHandler {
         httpStatus: 200
       }
 
-      logInfo({
-        message: 'PS: response',
-        policyResponse
-      })
-
+      logInfo({ message: 'PS: response', policyResponse })
       return policyResponse
     }
   }
@@ -333,7 +324,10 @@ export class WaltIdPolicyHandler extends PolicyHandler {
     const policyResponse = {
       success: response.status === 200 && response.data.verificationResult === true,
       message: response.data,
-      httpStatus: response.data.verificationResult === true ? response.status : 401
+      httpStatus:
+        response.data.verificationResult === true
+          ? response.status
+          : ERROR_CODES.UNKNOWN_ERROR
     }
 
     logInfo({
@@ -367,7 +361,7 @@ export class WaltIdPolicyHandler extends PolicyHandler {
     if (!web3VerificationResult.success) {
       return buildVerificationErrorRequestMessage(
         web3VerificationResult.message || 'Web3 Address verification error',
-        web3VerificationResult.code || 401,
+        web3VerificationResult.code || ERROR_CODES.UNKNOWN_ERROR,
         errorRedirectUri.replace('$id', requestPayload.policyServer.sessionId || '')
       )
     }
@@ -377,7 +371,7 @@ export class WaltIdPolicyHandler extends PolicyHandler {
     if (checkSSIPolicy.error) {
       return buildVerificationErrorRequestMessage(
         'SSIpolicy was found, but failed to fetch request credentials',
-        401,
+        ERROR_CODES.MISSING_FIELDS,
         errorRedirectUri.replace('$id', requestPayload.policyServer.sessionId || '')
       )
     }
@@ -408,7 +402,10 @@ export class WaltIdPolicyHandler extends PolicyHandler {
         const policyResponse = {
           success: response.status === 200 && response.data.verificationResult === true,
           message: response.data,
-          httpStatus: response.data.verificationResult === true ? response.status : 401
+          httpStatus:
+            response.data.verificationResult === true
+              ? response.status
+              : ERROR_CODES.UNKNOWN_ERROR
         }
         logInfo({
           message: 'PS: response',
@@ -418,7 +415,7 @@ export class WaltIdPolicyHandler extends PolicyHandler {
       } catch (e) {
         return {
           success: false,
-          httpStatus: e?.response?.status || 500,
+          httpStatus: e?.response?.status || ERROR_CODES.UNKNOWN_ERROR,
           message: {
             error: e?.response?.data?.message || 'Unknown error',
             redirectUri: errorRedirectUri.replace(
@@ -633,7 +630,7 @@ export class WaltIdPolicyHandler extends PolicyHandler {
       return {
         success: false,
         message: 'Missing required fields (consumerAddress, ddo, serviceId).',
-        code: 400
+        code: ERROR_CODES.MISSING_FIELDS
       }
     }
 
@@ -644,7 +641,11 @@ export class WaltIdPolicyHandler extends PolicyHandler {
     const service = ddo.credentialSubject?.services?.find((s: any) => s.id === serviceId)
 
     if (!service) {
-      return { success: false, message: 'Service not found in DDO.', code: 400 }
+      return {
+        success: false,
+        message: 'Service not found in DDO.',
+        code: ERROR_CODES.SERVICE_NOT_FOUND
+      }
     }
 
     const serviceAllowList = this.extractAddressList(service.credentials?.allow)
@@ -661,7 +662,7 @@ export class WaltIdPolicyHandler extends PolicyHandler {
       return {
         success: false,
         message: 'Access denied: Address is in deny list.',
-        code: 401
+        code: ERROR_CODES.ADDRESS_DENIED
       }
     }
 
@@ -672,7 +673,7 @@ export class WaltIdPolicyHandler extends PolicyHandler {
       return {
         success: false,
         message: 'Access denied: Empty allow list at asset level.',
-        code: 401
+        code: ERROR_CODES.EMPTY_ALLOW_LIST
       }
     }
 
@@ -683,7 +684,7 @@ export class WaltIdPolicyHandler extends PolicyHandler {
       return {
         success: false,
         message: 'Access denied: Empty allow list at service level.',
-        code: 401
+        code: ERROR_CODES.EMPTY_ALLOW_LIST
       }
     }
 
@@ -691,34 +692,28 @@ export class WaltIdPolicyHandler extends PolicyHandler {
     const serviceAllowsAll = serviceAllowList.includes('*')
 
     if (!serviceDefinesAddressCredentials) {
-      if (assetAllowsAll) {
-        return { success: true }
-      }
+      if (assetAllowsAll) return { success: true }
 
       return assetAllowList.includes(consumerAddress)
         ? { success: true }
         : {
             success: false,
             message: 'Access denied: Address not allowed at asset level.',
-            code: 401
+            code: ERROR_CODES.ADDRESS_NOT_ALLOWED
           }
     }
 
-    if (assetAllowsAll && serviceAllowsAll) {
-      return { success: true }
-    }
+    if (assetAllowsAll && serviceAllowsAll) return { success: true }
 
     const assetMatch = assetAllowsAll || assetAllowList.includes(consumerAddress)
     const serviceMatch = serviceAllowsAll || serviceAllowList.includes(consumerAddress)
 
-    if (assetMatch && serviceMatch) {
-      return { success: true }
-    }
+    if (assetMatch && serviceMatch) return { success: true }
 
     return {
       success: false,
       message: 'Access denied: Address not in both allow lists.',
-      code: 401
+      code: ERROR_CODES.ADDRESS_NOT_ALLOWED
     }
   }
 
