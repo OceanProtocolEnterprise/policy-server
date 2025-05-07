@@ -651,9 +651,9 @@ export class WaltIdPolicyHandler extends PolicyHandler {
     const serviceAllowList = this.extractAddressList(service.credentials?.allow)
     const serviceDenyList = this.extractAddressList(service.credentials?.deny)
 
-    const serviceDefinesAddressCredentials =
-      this.hasAddressCredential(service.credentials?.allow) ||
-      this.hasAddressCredential(service.credentials?.deny)
+    const serviceDefinesAddressCredentials = this.hasAddressCredential(
+      service.credentials?.allow
+    )
 
     if (
       assetDenyList.includes(consumerAddress) ||
