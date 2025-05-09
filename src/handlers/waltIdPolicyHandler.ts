@@ -446,6 +446,115 @@ export class WaltIdPolicyHandler extends PolicyHandler {
     }
   }
 
+  public async startCompute(
+    requestPayload: PolicyRequestPayload
+  ): Promise<PolicyRequestResponse> {
+    if (typeof requestPayload.policyServer === 'string') {
+      try {
+        requestPayload.policyServer = JSON.parse(requestPayload.policyServer)
+      } catch (error) {
+        return buildInvalidRequestMessage('Failed to parse policyServer JSON string')
+      }
+    }
+
+    const successRedirectUri = requestPayload.policyServer?.successRedirectUri
+      ? requestPayload.policyServer.successRedirectUri
+      : process.env.WALTID_SUCCESS_REDIRECT_URL || ''
+
+    const errorRedirectUri = requestPayload.policyServer?.errorRedirectUri
+      ? requestPayload.policyServer.errorRedirectUri
+      : process.env.WALTID_ERROR_REDIRECT_URL || ''
+
+    const web3VerificationResult = this.verifyWeb3Address(requestPayload)
+
+    if (!web3VerificationResult.success) {
+      return buildVerificationErrorRequestMessage(
+        web3VerificationResult.message || 'Web3 Address verification error',
+        web3VerificationResult.code || ERROR_CODES.UNKNOWN_ERROR,
+        errorRedirectUri.replace('$id', requestPayload.policyServer.sessionId || '')
+      )
+    }
+
+    const checkSSIPolicy = this.hasSSIPolicyToBeChecked(requestPayload)
+
+    if (checkSSIPolicy.error) {
+      return buildVerificationErrorRequestMessage(
+        'SSIpolicy was found, but failed to fetch request credentials',
+        ERROR_CODES.MISSING_FIELDS,
+        errorRedirectUri.replace('$id', requestPayload.policyServer.sessionId || '')
+      )
+    }
+
+    if (checkSSIPolicy.checkSSIPolicy) {
+      if (!requestPayload.policyServer?.sessionId)
+        return buildInvalidRequestMessage('Request body does not contain sessionId')
+
+      const url = new URL(
+        `/openid4vc/session/${requestPayload.policyServer.sessionId}`,
+        process.env.WALTID_VERIFIER_URL
+      )
+
+      logInfo({
+        message: 'WaltId: payload',
+        url
+      })
+
+      try {
+        const response = await axios.get(url.toString())
+
+        logInfo({
+          message: 'WaltId: response',
+          url: url.toString(),
+          response: response.data
+        })
+
+        const policyResponse = {
+          success: response.status === 200 && response.data.verificationResult === true,
+          message: response.data,
+          httpStatus:
+            response.data.verificationResult === true
+              ? response.status
+              : ERROR_CODES.UNKNOWN_ERROR
+        }
+        logInfo({
+          message: 'PS: response',
+          policyResponse
+        })
+        return policyResponse
+      } catch (e) {
+        return {
+          success: false,
+          httpStatus: e?.response?.status || ERROR_CODES.UNKNOWN_ERROR,
+          message: {
+            error: e?.response?.data?.message || 'Unknown error',
+            redirectUri: errorRedirectUri.replace(
+              '$id',
+              requestPayload.policyServer.sessionId || ''
+            )
+          }
+        }
+      }
+    } else {
+      const policyResponse = {
+        success: true,
+        message: {
+          redirectUri: successRedirectUri.replace(
+            '$id',
+            requestPayload.policyServer.sessionId || ''
+          )
+        },
+        httpStatus: 200
+      }
+
+      logInfo({
+        message: 'PS: response',
+        policyResponse
+      })
+
+      return policyResponse
+    }
+  }
+
   public async passthrough(
     requestPayload: PolicyRequestPayload
   ): Promise<PolicyRequestResponse> {
