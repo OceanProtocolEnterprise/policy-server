@@ -252,6 +252,18 @@ export class WaltIdPolicyHandler extends PolicyHandler {
     return await policyResponse
   }
 
+  public async validateDDO(
+    requestPayload: PolicyRequestPayload
+  ): Promise<PolicyRequestResponse> {
+    const policyResponse = {
+      success: true,
+      message: '',
+      httpStatus: 200
+    }
+
+    return await policyResponse
+  }
+
   public async newDDO(
     requestPayload: PolicyRequestPayload
   ): Promise<PolicyRequestResponse> {
@@ -457,13 +469,38 @@ export class WaltIdPolicyHandler extends PolicyHandler {
       }
     }
 
-    const successRedirectUri = requestPayload.policyServer?.successRedirectUri
-      ? requestPayload.policyServer.successRedirectUri
-      : process.env.WALTID_SUCCESS_REDIRECT_URL || ''
+    if (!Array.isArray(requestPayload.policyServer)) {
+      return buildInvalidRequestMessage('policyServer must be an array')
+    }
 
-    const errorRedirectUri = requestPayload.policyServer?.errorRedirectUri
-      ? requestPayload.policyServer.errorRedirectUri
-      : process.env.WALTID_ERROR_REDIRECT_URL || ''
+    if (!requestPayload.documentId || !requestPayload.serviceId) {
+      return buildInvalidRequestMessage(
+        'Request body must containt serviceId and documentId'
+      )
+    }
+
+    const matchingPolicy = requestPayload.policyServer.find(
+      (item: any) =>
+        item.documentId === requestPayload.documentId &&
+        item.serviceId === requestPayload.serviceId
+    )
+
+    if (!matchingPolicy) {
+      return buildInvalidRequestMessage(
+        'No matching policyServer entry found for given documentId and serviceId'
+      )
+    }
+
+    logInfo({
+      message: 'Matching policy:',
+      matchingPolicy
+    })
+
+    const successRedirectUri =
+      matchingPolicy.successRedirectUri || process.env.WALTID_SUCCESS_REDIRECT_URL || ''
+    const errorRedirectUri =
+      matchingPolicy.errorRedirectUri || process.env.WALTID_ERROR_REDIRECT_URL || ''
+    const sessionId = matchingPolicy.sessionId || ''
 
     const web3VerificationResult = this.verifyWeb3Address(requestPayload)
 
@@ -471,7 +508,7 @@ export class WaltIdPolicyHandler extends PolicyHandler {
       return buildVerificationErrorRequestMessage(
         web3VerificationResult.message || 'Web3 Address verification error',
         web3VerificationResult.code || ERROR_CODES.UNKNOWN_ERROR,
-        errorRedirectUri.replace('$id', requestPayload.policyServer.sessionId || '')
+        errorRedirectUri.replace('$id', sessionId || '')
       )
     }
 
@@ -481,16 +518,18 @@ export class WaltIdPolicyHandler extends PolicyHandler {
       return buildVerificationErrorRequestMessage(
         'SSIpolicy was found, but failed to fetch request credentials',
         ERROR_CODES.MISSING_FIELDS,
-        errorRedirectUri.replace('$id', requestPayload.policyServer.sessionId || '')
+        errorRedirectUri.replace('$id', sessionId || '')
       )
     }
 
     if (checkSSIPolicy.checkSSIPolicy) {
-      if (!requestPayload.policyServer?.sessionId)
-        return buildInvalidRequestMessage('Request body does not contain sessionId')
+      if (!sessionId)
+        return buildInvalidRequestMessage(
+          'Request body does not contain available sessionId'
+        )
 
       const url = new URL(
-        `/openid4vc/session/${requestPayload.policyServer.sessionId}`,
+        `/openid4vc/session/${sessionId}`,
         process.env.WALTID_VERIFIER_URL
       )
 
@@ -527,10 +566,7 @@ export class WaltIdPolicyHandler extends PolicyHandler {
           httpStatus: e?.response?.status || ERROR_CODES.UNKNOWN_ERROR,
           message: {
             error: e?.response?.data?.message || 'Unknown error',
-            redirectUri: errorRedirectUri.replace(
-              '$id',
-              requestPayload.policyServer.sessionId || ''
-            )
+            redirectUri: errorRedirectUri.replace('$id', sessionId || '')
           }
         }
       }
@@ -538,10 +574,7 @@ export class WaltIdPolicyHandler extends PolicyHandler {
       const policyResponse = {
         success: true,
         message: {
-          redirectUri: successRedirectUri.replace(
-            '$id',
-            requestPayload.policyServer.sessionId || ''
-          )
+          redirectUri: successRedirectUri.replace('$id', sessionId || '')
         },
         httpStatus: 200
       }
