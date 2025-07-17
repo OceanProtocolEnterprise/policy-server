@@ -15,8 +15,9 @@ export class WaltIdPolicyHandler extends PolicyHandler {
     requestPayload: PolicyRequestPayload
   ): Promise<PolicyRequestResponse> {
     const uuid =
-      requestPayload.sessionId && requestPayload.sessionId !== ''
-        ? requestPayload.sessionId
+      requestPayload.policyServer?.sessionId &&
+      requestPayload.policyServer?.sessionId !== ''
+        ? requestPayload.policyServer?.sessionId
         : randomUUID()
 
     const successRedirectUri = requestPayload.policyServer?.successRedirectUri

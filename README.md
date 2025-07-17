@@ -60,10 +60,10 @@ MODE_PS="1"
 ```json
 {
   "action": "initiate",
-  "sessionId": "",
   "serviceId": "ff294c2e2c7d01bd5f9701abc117737917bb1f91044ba6b2d0903fc806db0d65",
   "consumerAddress": "0xd727fb9be39fa019d7c02fea19e54d688da3a662",
   "policyServer": {
+    "sessionId": "",
     "successRedirectUri": "",
     "errorRedirectUri": "",
     "responseRedirectUri": "",
