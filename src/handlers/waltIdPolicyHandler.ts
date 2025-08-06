@@ -699,6 +699,17 @@ export class WaltIdPolicyHandler extends PolicyHandler {
     const combinedCredentials = [
       ...new Set([...credentialSubjectCredentials, ...serviceCredentials])
     ]
+    const normalizePolicies = (arr: any[]): string[] =>
+      arr
+        .map((p) =>
+          typeof p === 'string'
+            ? p
+            : p && typeof p === 'object' && typeof p.policy === 'string'
+              ? p.policy
+              : null
+        )
+        .filter((p): p is string => !!p)
+
     const vp_policies = new Set<string>()
     const vc_policies = new Set<string>()
 
@@ -708,12 +719,8 @@ export class WaltIdPolicyHandler extends PolicyHandler {
     const envvc_policies = process.env.DEFAULT_VC_POLICIES
       ? JSON.parse(process.env.DEFAULT_VC_POLICIES)
       : []
-
-    if (Array.isArray(envvp_policies))
-      envvp_policies.forEach((policy: string) => vp_policies.add(policy))
-
-    if (Array.isArray(envvc_policies))
-      envvc_policies.forEach((policy: string) => vc_policies.add(policy))
+    normalizePolicies(envvp_policies).forEach((pol) => vp_policies.add(pol))
+    normalizePolicies(envvc_policies).forEach((pol) => vc_policies.add(pol))
 
     const request_credentialsMap = new Map<string, any>()
 
