@@ -52,7 +52,6 @@ export class WaltIdPolicyHandler extends PolicyHandler {
       const url = new URL(`/openid4vc/verify`, process.env.WALTID_VERIFIER_URL)
 
       const requestCredentialsBody = this.parseRequestCredentials(requestPayload)
-
       const headers = {
         stateId: uuid,
         successRedirectUri,
@@ -671,6 +670,7 @@ export class WaltIdPolicyHandler extends PolicyHandler {
   private parseRequestCredentials(requestPayload: any): any {
     const credentialSubject = requestPayload?.ddo?.credentialSubject
     const targetType = 'SSIpolicy'
+
     const credentialSubjectCredentials =
       credentialSubject?.credentials?.allow
         ?.filter((item: any) => item?.type === targetType)
@@ -699,7 +699,29 @@ export class WaltIdPolicyHandler extends PolicyHandler {
     const combinedCredentials = [
       ...new Set([...credentialSubjectCredentials, ...serviceCredentials])
     ]
-    const normalizePolicies = (arr: any[]): string[] =>
+
+    const parsePolicies = (policies: any[] | undefined) => {
+      if (!Array.isArray(policies)) return []
+      return policies
+        .map((policy) => {
+          if (policy && typeof policy === 'object') {
+            return policy
+          }
+          if (typeof policy === 'string') {
+            try {
+              return JSON.parse(policy)
+            } catch (error) {
+              console.error(error)
+              logError(error)
+              return undefined
+            }
+          }
+          return undefined
+        })
+        .filter((p) => p !== undefined)
+    }
+
+    const normalizePolicyNames = (arr: any[]): string[] =>
       arr
         .map((p) =>
           typeof p === 'string'
@@ -713,48 +735,78 @@ export class WaltIdPolicyHandler extends PolicyHandler {
     const vp_policies = new Set<string>()
     const vc_policies = new Set<string>()
 
-    const envvp_policies = process.env.DEFAULT_VP_POLICIES
-      ? JSON.parse(process.env.DEFAULT_VP_POLICIES)
-      : []
-    const envvc_policies = process.env.DEFAULT_VC_POLICIES
-      ? JSON.parse(process.env.DEFAULT_VC_POLICIES)
-      : []
-    normalizePolicies(envvp_policies).forEach((pol) => vp_policies.add(pol))
-    normalizePolicies(envvc_policies).forEach((pol) => vc_policies.add(pol))
+    let envvp_policies: any[] = []
+    let envvc_policies: any[] = []
+    try {
+      envvp_policies = process.env.DEFAULT_VP_POLICIES
+        ? JSON.parse(process.env.DEFAULT_VP_POLICIES)
+        : []
+    } catch (e) {
+      console.error('Failed to parse DEFAULT_VP_POLICIES', e)
+      logError(e)
+    }
+    try {
+      envvc_policies = process.env.DEFAULT_VC_POLICIES
+        ? JSON.parse(process.env.DEFAULT_VC_POLICIES)
+        : []
+    } catch (e) {
+      console.error('Failed to parse DEFAULT_VC_POLICIES', e)
+      logError(e)
+    }
+
+    normalizePolicyNames(envvp_policies).forEach((pol) => vp_policies.add(pol))
+    normalizePolicyNames(envvc_policies).forEach((pol) => vc_policies.add(pol))
 
     const request_credentialsMap = new Map<string, any>()
 
     combinedCredentials.forEach((entry: any) => {
-      if (entry.vp_policies)
-        entry.vp_policies.forEach((policy: string) => vp_policies.add(policy))
-      if (entry.vc_policies)
-        entry.vc_policies.forEach((policy: string) => vc_policies.add(policy))
+      if (entry?.vp_policies) {
+        ;(Array.isArray(entry.vp_policies)
+          ? entry.vp_policies
+          : [entry.vp_policies]
+        ).forEach((policy: any) => {
+          if (typeof policy === 'string') vp_policies.add(policy)
+          else if (
+            policy &&
+            typeof policy === 'object' &&
+            typeof policy.policy === 'string'
+          ) {
+            vp_policies.add(policy.policy)
+          }
+        })
+      }
 
-      entry.request_credentials.forEach((credentialRequest: any) => {
+      if (entry?.vc_policies) {
+        ;(Array.isArray(entry.vc_policies)
+          ? entry.vc_policies
+          : [entry.v_cpolicies]
+        ).forEach((policy: any) => {
+          if (typeof policy === 'string') vc_policies.add(policy)
+          else if (
+            policy &&
+            typeof policy === 'object' &&
+            typeof policy.policy === 'string'
+          ) {
+            vc_policies.add(policy.policy)
+          }
+        })
+      }
+
+      const reqCreds: any[] = entry?.request_credentials ?? []
+      reqCreds.forEach((credentialRequest: any) => {
+        const parsedPolicies = parsePolicies(credentialRequest?.policies)
+
         const uniqueKey = JSON.stringify({
-          type: credentialRequest.type,
-          format: credentialRequest.format,
-          policies: credentialRequest.policies
+          type: credentialRequest?.type,
+          format: credentialRequest?.format,
+          policies: parsedPolicies
         })
 
         if (!request_credentialsMap.has(uniqueKey)) {
           request_credentialsMap.set(uniqueKey, {
-            type: credentialRequest.type,
-            format: credentialRequest.format,
-            policies: credentialRequest.policies
-              ?.map((policy: any) => {
-                if (typeof policy === 'string') {
-                  return policy
-                }
-                if (typeof policy === 'object' && policy.policy) {
-                  return {
-                    policy: policy.policy,
-                    args: policy.args
-                  }
-                }
-                return undefined
-              })
-              .filter(Boolean)
+            type: credentialRequest?.type,
+            format: credentialRequest?.format,
+            policies: parsedPolicies
           })
         }
       })
