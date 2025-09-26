@@ -1,22 +1,40 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-# Image and container name
 IMAGE_NAME="policy-server"
 CONTAINER_NAME="policy-server"
-PORT=8000
 
-# Build the image
-echo "Building Docker image with the name $IMAGE_NAME..."
-docker build -t $IMAGE_NAME:latest .
+LOCAL_PORT=8000 
+CONTAINER_PORT=8000
+ENV_FILE="$(dirname "$0")/../.env" 
 
-# Check if a container with the same name exists
-if [ $(docker ps -a -q -f name=$CONTAINER_NAME) ]; then
-    echo "A container with the name $CONTAINER_NAME already exists. Removing it..."
-    docker rm -f $CONTAINER_NAME
+echo "Building Docker image: $IMAGE_NAME"
+docker build -t "$IMAGE_NAME:latest" "$(dirname "$0")/.."
+
+if docker ps -a -q -f "name=^/${CONTAINER_NAME}$" >/dev/null; then
+  echo "Removing existing container: $CONTAINER_NAME"
+  docker rm -f "$CONTAINER_NAME"
 fi
 
-# Run the container
-echo "Starting container $CONTAINER_NAME on port $PORT..."
-docker run --name $CONTAINER_NAME -p $PORT:$PORT $IMAGE_NAME:latest
+if [[ -f "$ENV_FILE" ]]; then
+  echo "Loading environment variables from $ENV_FILE and running container in detached mode (-d)"
+  docker run -d \
+    --name "$CONTAINER_NAME" \
+    -p "$LOCAL_PORT:$CONTAINER_PORT" \
+    --env-file "$ENV_FILE" \
+    "$IMAGE_NAME:latest"
+else
+  echo "WARNING: .env file not found at $ENV_FILE, starting without environment variables"
+  docker run -d \
+    --name "$CONTAINER_NAME" \
+    -p "$LOCAL_PORT:$CONTAINER_PORT" \
+    "$IMAGE_NAME:latest"
+fi
 
-echo "Container $CONTAINER_NAME is running on port $PORT."
+echo "Container $CONTAINER_NAME is running in detached mode on port $LOCAL_PORT."
+
+if docker ps -q -f "name=^/${CONTAINER_NAME}$" >/dev/null; then
+  echo "Successfully started container $CONTAINER_NAME."
+else
+  echo "ERROR: Failed to start container $CONTAINER_NAME."
+fi

@@ -11,6 +11,7 @@
     "clean": "if [ -d ./dist ]; then find ./dist -mindepth 1 -delete; fi",
     "start": "node --trace-warnings --experimental-specifier-resolution=node dist/index.js",
     "start:docker": "./scripts/docker_build_run.sh",
+    "deploy:docker": "./scripts/deploy_docker.sh",
     "lint": "eslint --ignore-pattern .gitignore  . && npm run type-check",
     "lint:fix": "eslint --ignore-pattern .gitignore  . --fix",
     "format": "prettier --parser typescript --ignore-path .gitignore --write '**/*.{js,jsx,ts,tsx}'",

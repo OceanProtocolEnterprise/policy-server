@@ -1477,71 +1477,34 @@ ex. `https://verifier.portal.walt.id/openid4vc/verify/$id`and `http://ocean-node
 }
 
 ```
-## Deploy .sh example
+## Deploy docker image to server using .sh 
+### Required .env file example
 ```
-#!/bin/bash
+# --- .env file ---
+IMAGE_NAME="ocean-policy-server"
+CONTAINER_NAME="ocean-policy-server"
+SERVER_USER="ubuntu"
+SERVER_IP=""
+SSH_KEY="" # Example: /home/your_user/.ssh/id_rsa
+REMOTE_PATH="" # Example: /home/ubuntu/
+LOCAL_PORT=8100
+CONTAINER_PORT=8100
 
-IMAGE_NAME="ocean-policy-server"     
-CONTAINER_NAME="ocean-policy-server" 
-SERVER_USER="ubuntu"        
-SERVER_IP=""  
-#Route to ssh key
-SSH_KEY=""
-#Path where to store image
-REMOTE_PATH=""   
-LOCAL_PORT=8100                        
-CONTAINER_PORT=8100                    
-
-echo "Building docker image"
-docker build -t $IMAGE_NAME:latest .
-
-echo "Exporting docker build image..."
-docker save -o ${IMAGE_NAME}.tar $IMAGE_NAME:latest
-
-echo "Ziping docker image..."
-gzip -f ${IMAGE_NAME}.tar
-
-echo "Trasmiting to server..."
-scp -i $SSH_KEY ${IMAGE_NAME}.tar.gz $SERVER_USER@$SERVER_IP:$REMOTE_PATH
-
-echo "Runing commands on server..."
-ssh -i $SSH_KEY $SERVER_USER@$SERVER_IP << EOF
-  echo "unzip tar.gz..."
-  gunzip -f ${REMOTE_PATH}/${IMAGE_NAME}.tar.gz
-
-  echo "Importing docker..."
-  docker load -i ${REMOTE_PATH}/${IMAGE_NAME}.tar
-
-  echo "Deleting old container..."
-  docker stop $CONTAINER_NAME || true
-  docker rm $CONTAINER_NAME || true
-
-  echo "Starting new container..."
-  docker run -d \
-    --name "$CONTAINER_NAME" \
-    -p "$LOCAL_PORT:$CONTAINER_PORT" \
-    -e PORT="$LOCAL_PORT" \
-    -e AUTH_TYPE='waltid' \
-    -e OCEAN_NODE_URL='http://ocean-node-vm1.oceanenterprise.io:8000' \
-    -e WALTID_VERIFIER_URL='https://verifier.demo.walt.id' \
-    -e WALTID_SUCCESS_REDIRECT_URL='https://example.com/success?id=\$id' \
-    -e WALTID_ERROR_REDIRECT_URL='https://example.com/error?id=\$id' \
-    -e ENABLE_LOGS='1' \
-    -e MODE_PROXY='1' \
-    -e MODE_PS='1' \
-    -e WALTID_VERIFY_RESPONSE_REDIRECT_URL='http://ocean-node-vm2.oceanenterprise.io:8100/verify/\$id' \
-    -e WALTID_VERIFY_PRESENTATION_DEFINITION_URL='http://ocean-node-vm2.oceanenterprise.io:8100/pd/\$id' \
-    -e DEFAULT_VP_POLICIES='["expired","signature","revoked-status-list","not-before"]' \
-    -e DEFAULT_VC_POLICIES='["expired","signature","revoked-status-list","not-before"]' \
-    "$IMAGE_NAME:latest"
-
-
-  echo "Deleting temp data..."
-  rm -f ${REMOTE_PATH}/${IMAGE_NAME}.tar
-
-  echo "Container is up!"
-EOF
-
-echo "Done!"
-
+PORT=8100
+AUTH_TYPE='waltid'
+OCEAN_NODE_URL='[http://ocean-node-vm1.oceanenterprise.io:8000](http://ocean-node-vm1.oceanenterprise.io:8000)'
+WALTID_VERIFIER_URL='[https://verifier.demo.walt.id](https://verifier.demo.walt.id)'
+WALTID_SUCCESS_REDIRECT_URL='[https://example.com/success?id=$id](https://example.com/success?id=$id)'
+WALTID_ERROR_REDIRECT_URL='[https://example.com/error?id=$id](https://example.com/error?id=$id)'
+ENABLE_LOGS='1'
+MODE_PROXY='1'
+MODE_PS='1'
+WALTID_VERIFY_RESPONSE_REDIRECT_URL='[http://ocean-node-vm2.oceanenterprise.io:8100/verify/$id](http://ocean-node-vm2.oceanenterprise.io:8100/verify/$id)'
+WALTID_VERIFY_PRESENTATION_DEFINITION_URL='[http://ocean-node-vm2.oceanenterprise.io:8100/pd/$id](http://ocean-node-vm2.oceanenterprise.io:8100/pd/$id)'
+DEFAULT_VP_POLICIES='["expired","signature","revoked-status-list","not-before"]'
+DEFAULT_VC_POLICIES='["expired","signature","revoked-status-list","not-before"]'
+```
+### Run command in bash cli
+```
+npm run deploy:docker
 ```
