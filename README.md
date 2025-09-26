@@ -1492,15 +1492,15 @@ CONTAINER_PORT=8100
 
 PORT=8100
 AUTH_TYPE=waltid
-OCEAN_NODE_URL=[http://ocean-node-vm1.oceanenterprise.io:8000](http://ocean-node-vm1.oceanenterprise.io:8000)
-WALTID_VERIFIER_URL=[https://verifier.demo.walt.id](https://verifier.demo.walt.id)
-WALTID_SUCCESS_REDIRECT_URL=[https://example.com/success?id=$id](https://example.com/success?id=$id)
-WALTID_ERROR_REDIRECT_URL=[https://example.com/error?id=$id](https://example.com/error?id=$id)
+OCEAN_NODE_URL=http://ocean-node-vm1.oceanenterprise.io:8000
+WALTID_VERIFIER_URL=https://verifier.demo.walt.id
+WALTID_SUCCESS_REDIRECT_URL=https://example.com/success?id=$id
+WALTID_ERROR_REDIRECT_URL=https://example.com/error?id=$id
 ENABLE_LOGS=1
 MODE_PROXY=1
 MODE_PS=1
-WALTID_VERIFY_RESPONSE_REDIRECT_URL=[http://ocean-node-vm2.oceanenterprise.io:8100/verify/$id](http://ocean-node-vm2.oceanenterprise.io:8100/verify/$id)
-WALTID_VERIFY_PRESENTATION_DEFINITION_URL=[http://ocean-node-vm2.oceanenterprise.io:8100/pd/$id](http://ocean-node-vm2.oceanenterprise.io:8100/pd/$id)
+WALTID_VERIFY_RESPONSE_REDIRECT_URL=http://ocean-node-vm2.oceanenterprise.io:8100/verify/$id
+WALTID_VERIFY_PRESENTATION_DEFINITION_URL=http://ocean-node-vm2.oceanenterprise.io:8100/pd/$id
 DEFAULT_VP_POLICIES=["expired","signature","revoked-status-list","not-before"]
 DEFAULT_VC_POLICIES=["expired","signature","revoked-status-list","not-before"]
 ```
