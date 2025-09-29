@@ -163,7 +163,7 @@ export class WaltIdPolicyHandler extends PolicyHandler {
       //     ))
 
       const responseData = {
-        redirectUri: response.data,
+        redirectUri: response.data.redirect_uri,
         sessionId: requestPayload.sessionId
       }
 
