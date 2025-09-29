@@ -735,24 +735,8 @@ export class WaltIdPolicyHandler extends PolicyHandler {
     const vp_policies = new Set<string>()
     const vc_policies = new Set<string>()
 
-    let envvp_policies: any[] = []
-    let envvc_policies: any[] = []
-    try {
-      envvp_policies = process.env.DEFAULT_VP_POLICIES
-        ? JSON.parse(process.env.DEFAULT_VP_POLICIES)
-        : []
-    } catch (e) {
-      console.error('Failed to parse DEFAULT_VP_POLICIES', e)
-      logError(e)
-    }
-    try {
-      envvc_policies = process.env.DEFAULT_VC_POLICIES
-        ? JSON.parse(process.env.DEFAULT_VC_POLICIES)
-        : []
-    } catch (e) {
-      console.error('Failed to parse DEFAULT_VC_POLICIES', e)
-      logError(e)
-    }
+    const envvp_policies: string[] = this.parseEnvArray(process.env.DEFAULT_VP_POLICIES)
+    const envvc_policies: string[] = this.parseEnvArray(process.env.DEFAULT_VC_POLICIES)
 
     normalizePolicyNames(envvp_policies).forEach((pol) => vp_policies.add(pol))
     normalizePolicyNames(envvc_policies).forEach((pol) => vc_policies.add(pol))
@@ -816,6 +800,15 @@ export class WaltIdPolicyHandler extends PolicyHandler {
       vp_policies: Array.from(vp_policies),
       vc_policies: Array.from(vc_policies),
       request_credentials: Array.from(request_credentialsMap.values())
+    }
+  }
+
+  private parseEnvArray(envVar?: string): string[] {
+    if (!envVar) return []
+    try {
+      return JSON.parse(envVar)
+    } catch {
+      return envVar.split(',').map((s) => s.trim())
     }
   }
 

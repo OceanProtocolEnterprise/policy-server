@@ -6,30 +6,29 @@ Policy Server implementation.
 
 To get the Policy Server up and running in a Docker container:
 
-
-
-
-
 ## ENV Example
+
 ```
-AUTH_TYPE = "waltid"
-WALTID_VERIFIER_URL="https://verifier.portal.walt.id"
-OCEAN_NODE_URL="http://ocean-node-vm1.oceanenterprise.io:8000"
-WALTID_SUCCESS_REDIRECT_URL="https://example.com/success?id=\$id"
-WALTID_ERROR_REDIRECT_URL="https://example.com/error?id=\$id"
-WALTID_VERIFY_RESPONSE_REDIRECT_URL="http://ocean-node-vm2.oceanenterprise.io:8100/verify/\$id"
-WALTID_VERIFY_PRESENTATION_DEFINITION_URL="http://ocean-node-vm2.oceanenterprise.io:8100/pd/\$id"
-DEFAULT_VP_POLICIES=["expired","signature","revoked-status-list","not-before"]
-DEFAULT_VC_POLICIES=["expired","signature","revoked-status-list","not-before"]
-ENABLE_LOGS="1"
-MODE_PROXY="1"
-MODE_PS="1"
+AUTH_TYPE = waltid
+WALTID_VERIFIER_URL=https://verifier.demo.walt.id
+OCEAN_NODE_URL=http://ocean-node-vm1.oceanenterprise.io:8000
+WALTID_SUCCESS_REDIRECT_URL=https://example.com/success?id=$id
+WALTID_ERROR_REDIRECT_URL=https://example.com/error?id=$id
+WALTID_VERIFY_RESPONSE_REDIRECT_URL=http://ocean-node-vm2.oceanenterprise.io:8100/verify/$id
+WALTID_VERIFY_PRESENTATION_DEFINITION_URL=http://ocean-node-vm2.oceanenterprise.io:8100/pd/$id
+DEFAULT_VP_POLICIES=expired,signature,revoked-status-list,not-before
+DEFAULT_VC_POLICIES=expired,signature,revoked-status-list,not-before
+ENABLE_LOGS=1
+MODE_PROXY=1
+MODE_PS=1
 ```
 
 1. Start the Docker container:
 
    ```bash
    npm run start:docker
+
+   ```
 
 2. Access the API Documentation
 
@@ -50,13 +49,14 @@ MODE_PS="1"
 - `validateDDO`
 - `passthrough`
 
-
 ## 1) initiate
 
 ### PolicyServer Endpoint Example
+
 **Endpoint**: `http://localhost:3000/`
 
 ### PolicyServer Expected Payload Example
+
 ```json
 {
   "action": "initiate",
@@ -70,9 +70,7 @@ MODE_PS="1"
     "presentationDefinitionUri": ""
   },
   "ddo": {
-    "@context": [
-      "https://www.w3.org/ns/credentials/v2"
-    ],
+    "@context": ["https://www.w3.org/ns/credentials/v2"],
     "id": "did:ope:1ec8435672854acf15ef3e61216900f314f8fae5e04e6b2fb0dc91c0579e0d02",
     "version": "5.0.0",
     "credentialSubject": {
@@ -88,20 +86,14 @@ MODE_PS="1"
                     "type": "UniversityDegree"
                   }
                 ],
-                "vc_policies": [
-                  "signature",
-                  "not-before",
-                  "revoked-status-list"
-                ],
+                "vc_policies": ["signature", "not-before", "revoked-status-list"],
                 "vp_policies": []
               }
             ],
             "type": "SSIpolicy"
           },
           {
-            "values": [
-              "*"
-            ],
+            "values": ["*"],
             "type": "address"
           }
         ],
@@ -119,9 +111,7 @@ MODE_PS="1"
           "@direction": "",
           "@language": ""
         },
-        "tags": [
-          "test"
-        ],
+        "tags": ["test"],
         "author": "",
         "license": {
           "name": "https://github.com/MBadea17/testdata/blob/af26d4f968fdb6e1882c2a3cca16a1480ca44a9c/License%20Agreement.pdf",
@@ -155,20 +145,14 @@ MODE_PS="1"
                 "values": [
                   {
                     "request_credentials": [],
-                    "vc_policies": [
-                      "signature",
-                      "not-before",
-                      "revoked-status-list"
-                    ],
+                    "vc_policies": ["signature", "not-before", "revoked-status-list"],
                     "vp_policies": []
                   }
                 ],
                 "type": "SSIpolicy"
               },
               {
-                "values": [
-                  "0xd727fb9be39fa019d7c02fea19e54d688da3a662"
-                ],
+                "values": ["0xd727fb9be39fa019d7c02fea19e54d688da3a662"],
                 "type": "address"
               }
             ],
@@ -202,11 +186,7 @@ MODE_PS="1"
                         "type": "VerifiableId"
                       }
                     ],
-                    "vc_policies": [
-                      "signature",
-                      "not-before",
-                      "revoked-status-list"
-                    ],
+                    "vc_policies": ["signature", "not-before", "revoked-status-list"],
                     "vp_policies": []
                   }
                 ],
@@ -237,11 +217,7 @@ MODE_PS="1"
                 "values": [
                   {
                     "request_credentials": [],
-                    "vc_policies": [
-                      "signature",
-                      "not-before",
-                      "revoked-status-list"
-                    ],
+                    "vc_policies": ["signature", "not-before", "revoked-status-list"],
                     "vp_policies": []
                   }
                 ],
@@ -251,9 +227,7 @@ MODE_PS="1"
             "match_deny": "any",
             "deny": [
               {
-                "values": [
-                  "0x61db12d8b636cb49ea09eca58a893da9480e1f33"
-                ],
+                "values": ["0x61db12d8b636cb49ea09eca58a893da9480e1f33"],
                 "type": "address"
               }
             ]
@@ -324,9 +298,7 @@ MODE_PS="1"
       }
     },
     "additionalDdos": [],
-    "type": [
-      "VerifiableCredential"
-    ],
+    "type": ["VerifiableCredential"],
     "issuer": "did:jwk:eyJrdHkiOiJPS1AiLCJkIjoiUnBVOU5ONmdFbGtvMXpjYnR1VVRERlVXWEZCeks1Um9FZ3FRaVFHMWN4QSIsImNydiI6IkVkMjU1MTkiLCJraWQiOiI1TS1od19JbTZDalJDZ3NCVXhGX0R2aWxRRnhfdVU5RWpNcUpPbzdQOERnIiwieCI6IklaeXo1WVl6WkpJYWN3R21ockstYXdCa2ZJWmRqbUFWWTViVjFIbGNxYjgifQ",
     "proof": {
       "signature": "N2GQRLQbDUM7gLlUNweF-JjP9XS1uAWHWZy-8NLdlBdPJFrdvVkZk1z6UntVqATkCZU-l8MMQP_5DyMDzws3DA",
@@ -408,33 +380,26 @@ MODE_PS="1"
     ]
   }
 }
-
 ```
 
-
 ### Walt.Id Endpoint Example
+
 **Endpoint**: `https://verifier.portal.walt.id/verify/`
 
 ### Walt.Id Params
+
 **successRedirectUri**: `is an env variable, optional.`
 **StateId**: `Is generated by PolicyServer and represents the session id, included in response.`
-```stateId: randomUUID()```
+`stateId: randomUUID()`
 
-Policy Server will always add default VP and VC policies, if they are specified in ENV.  (revoked-status-list is this case)
+Policy Server will always add default VP and VC policies, if they are specified in ENV. (revoked-status-list is this case)
 
 ### Walt.Id Payload Example Generated by PolicyServer
+
 ```json
 {
-  "vp_policies": [
-    "expired",
-    "signature",
-    "revoked-status-list"
-  ],
-  "vc_policies": [
-    "expired",
-    "signature",
-    "revoked-status-list"
-  ],
+  "vp_policies": ["expired", "signature", "revoked-status-list"],
+  "vc_policies": ["expired", "signature", "revoked-status-list"],
   "request_credentials": [
     {
       "type": "VerifiableId",
@@ -457,29 +422,30 @@ Policy Server will always add default VP and VC policies, if they are specified 
     }
   ]
 }
-
 ```
 
 ### PolicyServer Response Example
+
 ```json
 {
   "success": true,
   "message": "openid4vp://authorize?response_type=vp_token&client_id=https%3A%2F%2Fverifier.portal.walt.id%2Fopenid4vc%2Fverify&response_mode=direct_post&state=ec64a21c-3d81-44f9-8b1d-099c1ec0c7b6&presentation_definition_uri=https%3A%2F%2Fverifier.portal.walt.id%2Fopenid4vc%2Fpd%2Fec64a21c-3d81-44f9-8b1d-099c1ec0c7b6&client_id_scheme=redirect_uri&client_metadata=%7B%22authorization_encrypted_response_alg%22%3A%22ECDH-ES%22%2C%22authorization_encrypted_response_enc%22%3A%22A256GCM%22%7D&nonce=a6a70049-c347-4046-89db-7090b43c858f&response_uri=https%3A%2F%2Fverifier.portal.walt.id%2Fopenid4vc%2Fverify%2Fec64a21c-3d81-44f9-8b1d-099c1ec0c7b6",
   "httpStatus": 200
 }
-
 ```
-In this case `state=ec64a21c-3d81-44f9-8b1d-099c1ec0c7b6` represents Session Id.
-Also, Policy Server replace default `response_uri` by `WALTID_VERIFY_RESPONSE_REDIRECT_URL` env variable and `presentation_definition_uri` by `WALTID_VERIFY_PRESENTATION_DEFINITION_URL` env variable, 
-ex. `https://verifier.portal.walt.id/openid4vc/verify/$id`and `http://ocean-node-vm2.oceanenterprise.io:8100/pd/$id` where $id represents the session id.
 
+In this case `state=ec64a21c-3d81-44f9-8b1d-099c1ec0c7b6` represents Session Id.
+Also, Policy Server replace default `response_uri` by `WALTID_VERIFY_RESPONSE_REDIRECT_URL` env variable and `presentation_definition_uri` by `WALTID_VERIFY_PRESENTATION_DEFINITION_URL` env variable,
+ex. `https://verifier.portal.walt.id/openid4vc/verify/$id`and `http://ocean-node-vm2.oceanenterprise.io:8100/pd/$id` where $id represents the session id.
 
 ## 2) presentationRequest
 
 ### PolicyServer Endpoint Example
+
 **Endpoint**: `http://localhost:3000/`
 
 ### PolicyServer Expected Payload Example
+
 ```json
 {
   "action": "presentationRequest",
@@ -491,22 +457,23 @@ ex. `https://verifier.portal.walt.id/openid4vc/verify/$id`and `http://ocean-node
 ```
 
 ### Walt.Id Endpoint Example
+
 **Endpoint**: `https://verifier.portal.walt.id/openid4vc/verify/{id}`
 
 **In this example**: `"https://verifier.portal.walt.id/openid4vc/verify/ec64a21c-3d81-44f9-8b1d-099c1ec0c7b6"`.
 
 ### PolicyServer Response Example
+
 ```json
 {
   "success": true,
   "message": {
     "successRedirectUri": "empty or the process.env.WALTID_SUCCESS_REDIRECT_URL",
     "sessionId": "ec64a21c-3d81-44f9-8b1d-099c1ec0c7b6",
-    "errorRedirectUri": "empty or the error message if the process.env.WALTID_ERROR_REDIRECT_URL not specified",
+    "errorRedirectUri": "empty or the error message if the process.env.WALTID_ERROR_REDIRECT_URL not specified"
   },
   "httpStatus": 200
 }
-
 ```
 
 **success** is true, if **process.env.WALTID_SUCCESS_REDIRECT_URL** is null, or it is the same, as **redirect_uri** from response.
@@ -514,22 +481,26 @@ ex. `https://verifier.portal.walt.id/openid4vc/verify/$id`and `http://ocean-node
 ## 3) checkSessionId
 
 ### PolicyServer Endpoint Example
+
 **Endpoint**: `http://localhost:3000/`
 
 ### PolicyServer Expected Payload Example
+
 ```json
 {
   "action": "checkSessionId",
-   "sessionId": "ec64a21c-3d81-44f9-8b1d-099c1ec0c7b6"
+  "sessionId": "ec64a21c-3d81-44f9-8b1d-099c1ec0c7b6"
 }
 ```
 
 ### Walt.Id Endpoint Example
+
 **Endpoint**: `https://verifier.portal.walt.id/openid4vc/session/{id}`
 
 **In this example**: `"https://verifier.portal.walt.id/openid4vc/session/ec64a21c-3d81-44f9-8b1d-099c1ec0c7b6"`.
 
 ### PolicyServer Response Example
+
 ```json
 {
   "success": true,
@@ -541,26 +512,29 @@ ex. `https://verifier.portal.walt.id/openid4vc/verify/$id`and `http://ocean-node
 
 ```
 
-
 ## 4) getPD
 
 ### PolicyServer Endpoint Example
+
 **Endpoint**: `http://localhost:3000/`
 
 ### PolicyServer Expected Payload Example
+
 ```json
 {
   "action": "getPD",
-   "sessionId": "ec64a21c-3d81-44f9-8b1d-099c1ec0c7b6"
+  "sessionId": "ec64a21c-3d81-44f9-8b1d-099c1ec0c7b6"
 }
 ```
 
 ### Walt.Id Endpoint Example
+
 **Endpoint**: `https://verifier.portal.walt.id/openid4vc/pd/{id}`
 
 **In this example**: `"https://verifier.portal.walt.id/openid4vc/pd/ec64a21c-3d81-44f9-8b1d-099c1ec0c7b6"`.
 
 ### PolicyServer Response Example
+
 ```json
 {
   "success": true,
@@ -577,9 +551,11 @@ ex. `https://verifier.portal.walt.id/openid4vc/verify/$id`and `http://ocean-node
 ## 5) download
 
 ### PolicyServer Endpoint Example
+
 **Endpoint**: `http://localhost:3000/`
 
 ### PolicyServer Expected Payload Example
+
 ```json
 {
   "action": "download",
@@ -593,9 +569,7 @@ ex. `https://verifier.portal.walt.id/openid4vc/verify/$id`and `http://ocean-node
     "presentationDefinitionUri": ""
   },
   "ddo": {
-    "@context": [
-      "https://www.w3.org/ns/credentials/v2"
-    ],
+    "@context": ["https://www.w3.org/ns/credentials/v2"],
     "id": "did:ope:1ec8435672854acf15ef3e61216900f314f8fae5e04e6b2fb0dc91c0579e0d02",
     "version": "5.0.0",
     "credentialSubject": {
@@ -611,20 +585,14 @@ ex. `https://verifier.portal.walt.id/openid4vc/verify/$id`and `http://ocean-node
                     "type": "UniversityDegree"
                   }
                 ],
-                "vc_policies": [
-                  "signature",
-                  "not-before",
-                  "revoked-status-list"
-                ],
+                "vc_policies": ["signature", "not-before", "revoked-status-list"],
                 "vp_policies": []
               }
             ],
             "type": "SSIpolicy"
           },
           {
-            "values": [
-              "*"
-            ],
+            "values": ["*"],
             "type": "address"
           }
         ],
@@ -642,9 +610,7 @@ ex. `https://verifier.portal.walt.id/openid4vc/verify/$id`and `http://ocean-node
           "@direction": "",
           "@language": ""
         },
-        "tags": [
-          "test"
-        ],
+        "tags": ["test"],
         "author": "",
         "license": {
           "name": "https://github.com/MBadea17/testdata/blob/af26d4f968fdb6e1882c2a3cca16a1480ca44a9c/License%20Agreement.pdf",
@@ -678,20 +644,14 @@ ex. `https://verifier.portal.walt.id/openid4vc/verify/$id`and `http://ocean-node
                 "values": [
                   {
                     "request_credentials": [],
-                    "vc_policies": [
-                      "signature",
-                      "not-before",
-                      "revoked-status-list"
-                    ],
+                    "vc_policies": ["signature", "not-before", "revoked-status-list"],
                     "vp_policies": []
                   }
                 ],
                 "type": "SSIpolicy"
               },
               {
-                "values": [
-                  "0xd727fb9be39fa019d7c02fea19e54d688da3a662"
-                ],
+                "values": ["0xd727fb9be39fa019d7c02fea19e54d688da3a662"],
                 "type": "address"
               }
             ],
@@ -725,11 +685,7 @@ ex. `https://verifier.portal.walt.id/openid4vc/verify/$id`and `http://ocean-node
                         "type": "VerifiableId"
                       }
                     ],
-                    "vc_policies": [
-                      "signature",
-                      "not-before",
-                      "revoked-status-list"
-                    ],
+                    "vc_policies": ["signature", "not-before", "revoked-status-list"],
                     "vp_policies": []
                   }
                 ],
@@ -760,11 +716,7 @@ ex. `https://verifier.portal.walt.id/openid4vc/verify/$id`and `http://ocean-node
                 "values": [
                   {
                     "request_credentials": [],
-                    "vc_policies": [
-                      "signature",
-                      "not-before",
-                      "revoked-status-list"
-                    ],
+                    "vc_policies": ["signature", "not-before", "revoked-status-list"],
                     "vp_policies": []
                   }
                 ],
@@ -774,9 +726,7 @@ ex. `https://verifier.portal.walt.id/openid4vc/verify/$id`and `http://ocean-node
             "match_deny": "any",
             "deny": [
               {
-                "values": [
-                  "0x61db12d8b636cb49ea09eca58a893da9480e1f33"
-                ],
+                "values": ["0x61db12d8b636cb49ea09eca58a893da9480e1f33"],
                 "type": "address"
               }
             ]
@@ -847,9 +797,7 @@ ex. `https://verifier.portal.walt.id/openid4vc/verify/$id`and `http://ocean-node
       }
     },
     "additionalDdos": [],
-    "type": [
-      "VerifiableCredential"
-    ],
+    "type": ["VerifiableCredential"],
     "issuer": "did:jwk:eyJrdHkiOiJPS1AiLCJkIjoiUnBVOU5ONmdFbGtvMXpjYnR1VVRERlVXWEZCeks1Um9FZ3FRaVFHMWN4QSIsImNydiI6IkVkMjU1MTkiLCJraWQiOiI1TS1od19JbTZDalJDZ3NCVXhGX0R2aWxRRnhfdVU5RWpNcUpPbzdQOERnIiwieCI6IklaeXo1WVl6WkpJYWN3R21ockstYXdCa2ZJWmRqbUFWWTViVjFIbGNxYjgifQ",
     "proof": {
       "signature": "N2GQRLQbDUM7gLlUNweF-JjP9XS1uAWHWZy-8NLdlBdPJFrdvVkZk1z6UntVqATkCZU-l8MMQP_5DyMDzws3DA",
@@ -934,11 +882,13 @@ ex. `https://verifier.portal.walt.id/openid4vc/verify/$id`and `http://ocean-node
 ```
 
 ### Walt.Id Endpoint Example
+
 **Endpoint**: `https://verifier.portal.walt.id/session/{id}`
 
 **In this example**: `"https://verifier.portal.walt.id/session/ec64a21c-3d81-44f9-8b1d-099c1ec0c7b6"`.
 
 ### PolicyServer Response Example
+
 ```json
 {
   "success": true,
@@ -952,12 +902,14 @@ ex. `https://verifier.portal.walt.id/openid4vc/verify/$id`and `http://ocean-node
 
 **success** is true, if **verificationResult** property in presentation state object is also true.
 
-## 6) startCompute 
+## 6) startCompute
 
 ### PolicyServer Endpoint Example
+
 **Endpoint**: `http://localhost:3000/`
 
 ### PolicyServer Expected Payload Example
+
 ```json
 {
   "action": "startCompute",
@@ -965,18 +917,18 @@ ex. `https://verifier.portal.walt.id/openid4vc/verify/$id`and `http://ocean-node
   "serviceId": "ff294c2e2c7d01bd5f9701abc117737917bb1f91044ba6b2d0903fc806db0d65",
   "consumerAddress": "0xd727fb9be39fa019d7c02fea19e54d688da3a662",
   "policyServer": [
-    { 
+    {
       "documentId": "did1",
-      "serviceId": "ff294c2e2c7d01bd5f9701abc117737917bb1f91044ba6b2d0903fc806db0d65",    
+      "serviceId": "ff294c2e2c7d01bd5f9701abc117737917bb1f91044ba6b2d0903fc806db0d65",
       "successRedirectUri": "",
       "sessionId": "",
       "errorRedirectUri": "",
       "responseRedirectUri": "",
       "presentationDefinitionUri": ""
     },
-    { 
+    {
       "documentId": "did2",
-      "serviceId": "service2",    
+      "serviceId": "service2",
       "successRedirectUri": "",
       "sessionId": "",
       "errorRedirectUri": "",
@@ -985,9 +937,7 @@ ex. `https://verifier.portal.walt.id/openid4vc/verify/$id`and `http://ocean-node
     }
   ],
   "ddo": {
-    "@context": [
-      "https://www.w3.org/ns/credentials/v2"
-    ],
+    "@context": ["https://www.w3.org/ns/credentials/v2"],
     "id": "did:ope:1ec8435672854acf15ef3e61216900f314f8fae5e04e6b2fb0dc91c0579e0d02",
     "version": "5.0.0",
     "credentialSubject": {
@@ -1003,20 +953,14 @@ ex. `https://verifier.portal.walt.id/openid4vc/verify/$id`and `http://ocean-node
                     "type": "UniversityDegree"
                   }
                 ],
-                "vc_policies": [
-                  "signature",
-                  "not-before",
-                  "revoked-status-list"
-                ],
+                "vc_policies": ["signature", "not-before", "revoked-status-list"],
                 "vp_policies": []
               }
             ],
             "type": "SSIpolicy"
           },
           {
-            "values": [
-              "*"
-            ],
+            "values": ["*"],
             "type": "address"
           }
         ],
@@ -1034,9 +978,7 @@ ex. `https://verifier.portal.walt.id/openid4vc/verify/$id`and `http://ocean-node
           "@direction": "",
           "@language": ""
         },
-        "tags": [
-          "test"
-        ],
+        "tags": ["test"],
         "author": "",
         "license": {
           "name": "https://github.com/MBadea17/testdata/blob/af26d4f968fdb6e1882c2a3cca16a1480ca44a9c/License%20Agreement.pdf",
@@ -1070,20 +1012,14 @@ ex. `https://verifier.portal.walt.id/openid4vc/verify/$id`and `http://ocean-node
                 "values": [
                   {
                     "request_credentials": [],
-                    "vc_policies": [
-                      "signature",
-                      "not-before",
-                      "revoked-status-list"
-                    ],
+                    "vc_policies": ["signature", "not-before", "revoked-status-list"],
                     "vp_policies": []
                   }
                 ],
                 "type": "SSIpolicy"
               },
               {
-                "values": [
-                  "0xd727fb9be39fa019d7c02fea19e54d688da3a662"
-                ],
+                "values": ["0xd727fb9be39fa019d7c02fea19e54d688da3a662"],
                 "type": "address"
               }
             ],
@@ -1117,11 +1053,7 @@ ex. `https://verifier.portal.walt.id/openid4vc/verify/$id`and `http://ocean-node
                         "type": "VerifiableId"
                       }
                     ],
-                    "vc_policies": [
-                      "signature",
-                      "not-before",
-                      "revoked-status-list"
-                    ],
+                    "vc_policies": ["signature", "not-before", "revoked-status-list"],
                     "vp_policies": []
                   }
                 ],
@@ -1152,11 +1084,7 @@ ex. `https://verifier.portal.walt.id/openid4vc/verify/$id`and `http://ocean-node
                 "values": [
                   {
                     "request_credentials": [],
-                    "vc_policies": [
-                      "signature",
-                      "not-before",
-                      "revoked-status-list"
-                    ],
+                    "vc_policies": ["signature", "not-before", "revoked-status-list"],
                     "vp_policies": []
                   }
                 ],
@@ -1166,9 +1094,7 @@ ex. `https://verifier.portal.walt.id/openid4vc/verify/$id`and `http://ocean-node
             "match_deny": "any",
             "deny": [
               {
-                "values": [
-                  "0x61db12d8b636cb49ea09eca58a893da9480e1f33"
-                ],
+                "values": ["0x61db12d8b636cb49ea09eca58a893da9480e1f33"],
                 "type": "address"
               }
             ]
@@ -1239,9 +1165,7 @@ ex. `https://verifier.portal.walt.id/openid4vc/verify/$id`and `http://ocean-node
       }
     },
     "additionalDdos": [],
-    "type": [
-      "VerifiableCredential"
-    ],
+    "type": ["VerifiableCredential"],
     "issuer": "did:jwk:eyJrdHkiOiJPS1AiLCJkIjoiUnBVOU5ONmdFbGtvMXpjYnR1VVRERlVXWEZCeks1Um9FZ3FRaVFHMWN4QSIsImNydiI6IkVkMjU1MTkiLCJraWQiOiI1TS1od19JbTZDalJDZ3NCVXhGX0R2aWxRRnhfdVU5RWpNcUpPbzdQOERnIiwieCI6IklaeXo1WVl6WkpJYWN3R21ockstYXdCa2ZJWmRqbUFWWTViVjFIbGNxYjgifQ",
     "proof": {
       "signature": "N2GQRLQbDUM7gLlUNweF-JjP9XS1uAWHWZy-8NLdlBdPJFrdvVkZk1z6UntVqATkCZU-l8MMQP_5DyMDzws3DA",
@@ -1326,11 +1250,13 @@ ex. `https://verifier.portal.walt.id/openid4vc/verify/$id`and `http://ocean-node
 ```
 
 ### Walt.Id Endpoint Example
+
 **Endpoint**: `https://verifier.portal.walt.id/session/{id}`
 
 **In this example**: `"https://verifier.portal.walt.id/session/ec64a21c-3d81-44f9-8b1d-099c1ec0c7b6"`.
 
 ### PolicyServer Response Example
+
 ```json
 {
   "success": true,
@@ -1344,33 +1270,30 @@ ex. `https://verifier.portal.walt.id/openid4vc/verify/$id`and `http://ocean-node
 
 **success** is true, if **verificationResult** property in presentation state object is also true.
 
-
 ## 7 encrypt
 
 ### PolicyServer Endpoint Example
+
 **Endpoint**: `http://localhost:3000/`
 
 ### PolicyServer Expected Payload Example
 
 ```json
-
 {
   "action": "encrypt",
   "policyServer": {}
 }
-
 ```
-
 
 ## 8 decrypt
 
 ### PolicyServer Endpoint Example
+
 **Endpoint**: `http://localhost:3000/`
 
 ### PolicyServer Expected Payload Example
 
 ```json
-
 {
   "action": "decrypt",
   "decrypterAddress": "0x123",
@@ -1379,79 +1302,72 @@ ex. `https://verifier.portal.walt.id/openid4vc/verify/$id`and `http://ocean-node
   "dataNftAddress": "0x123",
   "policyServer": {}
 }
-
 ```
-
 
 ## 9 newDDO
 
 ### PolicyServer Endpoint Example
+
 **Endpoint**: `http://localhost:3000/`
 
 ### PolicyServer Expected Payload Example
 
 ```json
-
- {
-  "action":"newDDO",
+{
+  "action": "newDDO",
   "rawDDO": {},
   "chainId": 1,
   "txId": "0x123",
   "eventRaw": "raw event data"
 }
-
 ```
-
 
 ## 10 updateDDO
 
 ### PolicyServer Endpoint Example
+
 **Endpoint**: `http://localhost:3000/`
 
 ### PolicyServer Expected Payload Example
 
 ```json
-
- {
-  "action":"updateDDO",
+{
+  "action": "updateDDO",
   "rawDDO": {},
   "chainId": 1,
   "txId": "0x123",
   "eventRaw": "raw event data"
 }
-
 ```
-
 
 ## 11 validate DDO
 
 ### PolicyServer Endpoint Example
+
 **Endpoint**: `http://localhost:3000/`
 
 ### PolicyServer Expected Payload Example
 
 ```json
-
- {
-  "action":"updateDDO",
+{
+  "action": "updateDDO",
   "rawDDO": {},
   "chainId": 1,
   "txId": "0x123",
   "eventRaw": "raw event data"
 }
-
 ```
 
 ## 12 passthrough
 
 ### PolicyServer Endpoint Example
+
 **Endpoint**: `http://localhost:3000/`
 
 ### PolicyServer Expected Payload Example
 
 ```json
-
- {
+{
   "action": "passthrough",
   "url": "/openid4vc/verify",
   "httpMethod": "POST",
@@ -1462,26 +1378,27 @@ ex. `https://verifier.portal.walt.id/openid4vc/verify/$id`and `http://ocean-node
         "type": "OpenBadgeCredential"
       }
     ]
-  },
+  }
 }
-
 ```
 
 ### PolicyServer Response Example
-```json
 
+```json
 {
   "success": true,
   "message": "openid4vp://authorize?response_type=vp_token&client_id=https%3A%2F%2Fverifier.portal.walt.id%2Fopenid4vc%2Fverify&response_mode=direct_post&state=yidllNybpwZe&presentation_definition_uri=https%3A%2F%2Fverifier.portal.walt.id%2Fopenid4vc%2Fpd%2FyidllNybpwZe&client_id_scheme=redirect_uri&client_metadata=%7B%22authorization_encrypted_response_alg%22%3A%22ECDH-ES%22%2C%22authorization_encrypted_response_enc%22%3A%22A256GCM%22%7D&nonce=a0d5ba73-e27d-45da-9780-8b05428c3a61&response_uri=https%3A%2F%2Fverifier.portal.walt.id%2Fopenid4vc%2Fverify%2FyidllNybpwZe",
   "httpStatus": 200
 }
+```
+
+## Deploy docker image to server using .sh
+
+### Required .env file example
 
 ```
-## Deploy docker image to server using .sh 
-### Required .env file example
-```
 # --- .env file ---
-IMAGE_NAME=ocean-policy-server 
+IMAGE_NAME=ocean-policy-server
 CONTAINER_NAME=ocean-policy-server
 SERVER_USER=ubuntu
 SERVER_IP=
@@ -1501,10 +1418,12 @@ MODE_PROXY=1
 MODE_PS=1
 WALTID_VERIFY_RESPONSE_REDIRECT_URL=http://ocean-node-vm2.oceanenterprise.io:8100/verify/$id
 WALTID_VERIFY_PRESENTATION_DEFINITION_URL=http://ocean-node-vm2.oceanenterprise.io:8100/pd/$id
-DEFAULT_VP_POLICIES=["expired","signature","revoked-status-list","not-before"]
-DEFAULT_VC_POLICIES=["expired","signature","revoked-status-list","not-before"]
+DEFAULT_VP_POLICIES=expired,signature,revoked-status-list,not-before
+DEFAULT_VC_POLICIES=expired,signature,revoked-status-list,not-before
 ```
+
 ### Run command in bash cli
+
 ```
 npm run deploy:docker
 ```
