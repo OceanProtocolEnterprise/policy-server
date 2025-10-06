@@ -721,7 +721,18 @@ export class WaltIdPolicyHandler extends PolicyHandler {
         .filter((p) => p !== undefined)
     }
 
-    const normalizePolicyNames = (arr: any[]): string[] =>
+    const normalizeVpPolicyNames = (arr: any[]): any[] =>
+      arr
+        .map((p) =>
+          typeof p === 'string'
+            ? { policy: p }
+            : typeof p === 'object' && p.policy
+              ? { policy: p.policy, ...(p.args ? { args: p.args } : {}) }
+              : null
+        )
+        .filter(Boolean)
+
+    const normalizeVcPolicyNames = (arr: any[]): string[] =>
       arr
         .map((p) =>
           typeof p === 'string'
@@ -732,30 +743,30 @@ export class WaltIdPolicyHandler extends PolicyHandler {
         )
         .filter((p): p is string => !!p)
 
-    const vp_policies = new Set<string>()
+    const vp_policies: any[] = []
     const vc_policies = new Set<string>()
 
     const envvp_policies: string[] = this.parseEnvArray(process.env.DEFAULT_VP_POLICIES)
     const envvc_policies: string[] = this.parseEnvArray(process.env.DEFAULT_VC_POLICIES)
 
-    normalizePolicyNames(envvp_policies).forEach((pol) => vp_policies.add(pol))
-    normalizePolicyNames(envvc_policies).forEach((pol) => vc_policies.add(pol))
+    normalizeVpPolicyNames(envvp_policies).forEach((pol) => vp_policies.push(pol))
+    normalizeVcPolicyNames(envvc_policies).forEach((pol) => vc_policies.add(pol))
 
     const request_credentialsMap = new Map<string, any>()
 
     combinedCredentials.forEach((entry: any) => {
       if (entry?.vp_policies) {
-        ;(Array.isArray(entry.vp_policies)
+        const vpArr = Array.isArray(entry.vp_policies)
           ? entry.vp_policies
           : [entry.vp_policies]
-        ).forEach((policy: any) => {
-          if (typeof policy === 'string') vp_policies.add(policy)
-          else if (
-            policy &&
-            typeof policy === 'object' &&
-            typeof policy.policy === 'string'
-          ) {
-            vp_policies.add(policy.policy)
+
+        vpArr.forEach((policy: any) => {
+          if (typeof policy === 'string') {
+            vp_policies.push({ policy })
+          } else if (typeof policy === 'object' && typeof policy.policy === 'string') {
+            const obj: any = { policy: policy.policy }
+            if (policy.args !== undefined) obj.args = policy.args
+            vp_policies.push(obj)
           }
         })
       }
@@ -795,6 +806,14 @@ export class WaltIdPolicyHandler extends PolicyHandler {
         }
       })
     })
+
+    console.log(
+      JSON.stringify({
+        vp_policies: Array.from(vp_policies),
+        vc_policies: Array.from(vc_policies),
+        request_credentials: Array.from(request_credentialsMap.values())
+      })
+    )
 
     return {
       vp_policies: Array.from(vp_policies),
