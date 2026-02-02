@@ -1,0 +1,10 @@
+services:
+  policy-server:
+    image: oceanenterprise/policy-server:latest
+    container_name: policy-server
+    restart: unless-stopped
+    pull_policy: always
+    env_file:
+      - .env
+    ports:
+      - "8001:8000"
