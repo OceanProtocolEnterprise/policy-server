@@ -2,6 +2,7 @@ import { Request, Response, NextFunction, RequestHandler } from 'express'
 import axios, { AxiosError } from 'axios'
 import { PolicyRequestResponse } from '../@types/policy'
 import { logError, logInfo } from './logger.js'
+import { redactSensitiveHeaders } from './auth.js'
 
 export const asyncHandler =
   (fn: RequestHandler): RequestHandler =>
@@ -12,7 +13,7 @@ export const requestLogger = (req: Request, res: Response, next: NextFunction): 
   const logMessage = {
     method: req.method,
     url: req.originalUrl,
-    headers: req.headers,
+    headers: redactSensitiveHeaders(req.headers),
     body: req.body
   }
 
@@ -32,7 +33,7 @@ export const errorHandler = (
   const logMessage = {
     method: req.method,
     url: req.originalUrl,
-    headers: req.headers,
+    headers: redactSensitiveHeaders(req.headers),
     body: req.body,
     error: {
       message: err.message,

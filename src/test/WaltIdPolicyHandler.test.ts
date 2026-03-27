@@ -2,7 +2,15 @@
 import { expect } from 'chai'
 import sinon from 'sinon'
 import axios from 'axios'
+import dotenv from 'dotenv'
+import path from 'path'
+import { fileURLToPath } from 'url'
 import { WaltIdPolicyHandler } from '../handlers/waltIdPolicyHandler.js'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+dotenv.config({ path: path.join(__dirname, '.env.test') })
 
 describe('WaltIdPolicyHandler', () => {
   let handler: WaltIdPolicyHandler

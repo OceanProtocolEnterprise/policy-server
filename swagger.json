@@ -9,6 +9,17 @@
     "/": {
       "post": {
         "summary": "Perform an action",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-API-Key",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Optional shared secret header. Required only when POLICY_SERVER_API_KEY is configured on the Policy Server."
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -1218,6 +1229,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Missing or invalid API key."
           }
         }
       }
