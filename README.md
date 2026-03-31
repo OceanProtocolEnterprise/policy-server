@@ -21,6 +21,8 @@ DEFAULT_VC_POLICIES=expired,signature,revoked-status-list,not-before
 ENABLE_LOGS=1
 MODE_PROXY=1
 MODE_PS=1
+# Optional: if set, POST / requires X-API-Key to match this value
+POLICY_SERVER_API_KEY=API_KEY_EXAMPLE
 ```
 
 1. Start the Docker container:
@@ -35,6 +37,8 @@ MODE_PS=1
 [http://localhost:8000/api-docs](http://localhost:8000/api-docs)
 
 **Actions**
+
+`POLICY_SERVER_API_KEY` is optional. If it is configured, requests to `POST /` must include `X-API-Key: <POLICY_SERVER_API_KEY>`, and missing or invalid keys are rejected with `401 Unauthorized` before any action is processed. If it is not configured, the Policy Server accepts requests without API key authentication.
 
 - `initiate`
 - `getPD`
@@ -1416,6 +1420,8 @@ WALTID_ERROR_REDIRECT_URL=https://example.com/error?id=$id
 ENABLE_LOGS=1
 MODE_PROXY=1
 MODE_PS=1
+# Optional: if set, POST / requires X-API-Key to match this value
+POLICY_SERVER_API_KEY=API_KEY_EXAMPLE
 WALTID_VERIFY_RESPONSE_REDIRECT_URL=http://ocean-node-vm2.oceanenterprise.io:8100/verify/$id
 WALTID_VERIFY_PRESENTATION_DEFINITION_URL=http://ocean-node-vm2.oceanenterprise.io:8100/pd/$id
 DEFAULT_VP_POLICIES=expired,signature,revoked-status-list,not-before

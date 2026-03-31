@@ -10,53 +10,73 @@ import {
 } from './utils/verifyPresentationRequest.js'
 import { downloadLogs } from './utils/logger.js'
 import dotenv from 'dotenv'
-dotenv.config()
-const app = express()
-const authType = process.env.AUTH_TYPE || 'waltid'
-async function handlePolicyRequest(
-  req: Request<{}, {}, PolicyRequestPayload>,
-  res: Response
-): Promise<void> {
-  const { action, ...rest } = req.body
+import path from 'path'
+import { fileURLToPath } from 'url'
+import { policyServerApiKeyAuth } from './utils/auth.js'
 
-  const handler = PolicyHandlerFactory.createPolicyHandler(authType)
-  if (handler == null) {
-    res.status(404).json({
-      success: false,
-      status: 404,
-      message: `Handler for auth type "${authType}" is not found.`
-    })
+dotenv.config()
+
+export function createApp(): express.Express {
+  const app = express()
+  const authType = process.env.AUTH_TYPE || 'waltid'
+
+  async function handlePolicyRequest(
+    req: Request<{}, {}, PolicyRequestPayload>,
+    res: Response
+  ): Promise<void> {
+    const { action, ...rest } = req.body
+
+    const handler = PolicyHandlerFactory.createPolicyHandler(authType)
+    if (handler == null) {
+      res.status(404).json({
+        success: false,
+        httpStatus: 404,
+        message: `Handler for auth type "${authType}" is not found.`
+      })
+      return
+    }
+
+    const payload: PolicyRequestPayload = { action, ...rest }
+    const response: PolicyRequestResponse = await handler.execute(payload)
+    res.status(response.httpStatus).json(response)
   }
 
-  const payload: PolicyRequestPayload = { action, ...rest }
-  const response: PolicyRequestResponse = await handler.execute(payload)
-  res.status(response.httpStatus).json(response)
+  app.use(express.json())
+
+  if (process.env.MODE_PS === '1') {
+    app.post(
+      '/',
+      policyServerApiKeyAuth,
+      requestLogger,
+      asyncHandler(handlePolicyRequest)
+    )
+  }
+  if (process.env.OCEAN_NODE_URL && process.env.MODE_PROXY === '1') {
+    app.post(
+      '/verify/:id',
+      express.urlencoded({ extended: true }),
+      requestLogger,
+      asyncHandler(handleVerifyPresentationRequest)
+    )
+    app.get('/pd/:id', requestLogger, asyncHandler(handleGetPD))
+  }
+  if (process.env.ENABLE_LOGS === '1') {
+    app.get('/logs', requestLogger, downloadLogs)
+  }
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc))
+  app.use(errorHandler)
+
+  return app
 }
 
-app.use(express.json())
-app.use(requestLogger)
-if (process.env.MODE_PS && process.env.MODE_PS === '1') {
-  app.post('/', asyncHandler(handlePolicyRequest))
-}
-if (
-  process.env.OCEAN_NODE_URL &&
-  process.env.MODE_PROXY &&
-  process.env.MODE_PROXY === '1'
-) {
-  app.post(
-    '/verify/:id',
-    express.urlencoded({ extended: true }),
-    asyncHandler(handleVerifyPresentationRequest)
-  )
-  app.get('/pd/:id', asyncHandler(handleGetPD))
-}
-if (process.env.ENABLE_LOGS && process.env.ENABLE_LOGS === '1') {
-  app.get('/logs', downloadLogs)
-}
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDoc))
-app.use(errorHandler)
+export const app = createApp()
 
-const PORT = process.env.PORT || 3000
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`)
-})
+const currentModulePath = fileURLToPath(import.meta.url)
+const entrypointPath = process.argv[1] ? path.resolve(process.argv[1]) : ''
+
+if (entrypointPath === currentModulePath) {
+  const PORT = process.env.PORT || 3000
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`)
+  })
+}
