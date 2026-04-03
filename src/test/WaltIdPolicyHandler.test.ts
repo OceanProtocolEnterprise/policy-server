@@ -244,7 +244,7 @@ describe('WaltIdPolicyHandler', () => {
     expect(stub.calledOnce).to.be.true
     expect(response.success).to.be.true
     expect(response.message.sessionId).to.be.a('string')
-    expect(response.message.sessionId).to.match(/^[a-f0-9]{64}\.[a-f0-9]{64}$/)
+    expect(response.message.sessionId).to.match(/^[a-f0-9]{64}-[a-f0-9]{64}$/)
     expect(response.message.sessionId).to.not.equal('old-session-id')
     expect(decodeURIComponent(response.message.redirectUri)).to.include(
       `sessionId=${response.message.sessionId}`
@@ -260,7 +260,7 @@ describe('WaltIdPolicyHandler', () => {
       serviceId: 'service-1',
       consumerAddress: '0xd727fb9be39fa019d7c02fea19e54d688da3a662',
       policyServer: {
-        sessionId: `${'b'.repeat(64)}.${'a'.repeat(64)}`,
+        sessionId: `${'b'.repeat(64)}-${'a'.repeat(64)}`,
         successRedirectUri: 'https://example.com/success?id=$id',
         errorRedirectUri: 'https://example.com/error?id=$id'
       },
@@ -284,7 +284,11 @@ describe('WaltIdPolicyHandler', () => {
     const response = await handler.download(payload as any)
 
     expect(response.success).to.be.false
-    expect(response.message).to.include('invalid sessionId')
+    expect(response.httpStatus).to.equal(403)
+    expect(response.message.error).to.include('Access denied')
+    expect(response.message.redirectUri).to.equal(
+      `https://example.com/error?id=${payload.policyServer.sessionId}`
+    )
   })
 
   it('should call download with valid sessionId', async () => {
@@ -301,7 +305,7 @@ describe('WaltIdPolicyHandler', () => {
       serviceId,
       consumerAddress,
       policyServer: {
-        sessionId: `${sessionContextHash}.${'a'.repeat(64)}`,
+        sessionId: `${sessionContextHash}-${'a'.repeat(64)}`,
         successRedirectUri: 'https://example.com/success?id=$id',
         errorRedirectUri: 'https://example.com/error?id=$id'
       },
@@ -341,6 +345,122 @@ describe('WaltIdPolicyHandler', () => {
     expect(response.httpStatus).to.equal(200)
     expect(response.message.redirectUri).to.equal(
       `https://example.com/success?id=${payload.policyServer.sessionId}`
+    )
+  })
+
+  it('should reject startCompute when matched policy sessionId does not match request context', async () => {
+    const payload = {
+      action: 'startCompute',
+      documentId: 'did:ope:123',
+      serviceId: 'service-1',
+      consumerAddress: '0xd727fb9be39fa019d7c02fea19e54d688da3a662',
+      policyServer: [
+        {
+          documentId: 'did:ope:123',
+          serviceId: 'service-1',
+          sessionId: `${'b'.repeat(64)}-${'a'.repeat(64)}`,
+          successRedirectUri: 'https://example.com/success?id=$id',
+          errorRedirectUri: 'https://example.com/error?id=$id'
+        }
+      ],
+      ddo: {
+        credentialSubject: {
+          credentials: {
+            allow: [
+              {
+                values: ['*'],
+                type: 'address'
+              }
+            ],
+            deny: [] as any[],
+            match_deny: 'any'
+          },
+          services: [
+            {
+              id: 'service-1',
+              credentials: {
+                allow: [
+                  {
+                    values: ['*'],
+                    type: 'address'
+                  }
+                ],
+                deny: [] as any[]
+              }
+            }
+          ]
+        }
+      }
+    }
+
+    const response = await handler.startCompute(payload as any)
+
+    expect(response.success).to.be.false
+    expect(response.httpStatus).to.equal(403)
+    expect(response.message.error).to.include('Access denied')
+    expect(response.message.redirectUri).to.equal(
+      `https://example.com/error?id=${payload.policyServer[0].sessionId}`
+    )
+  })
+
+  it('should call startCompute with valid matched policy sessionId', async () => {
+    const documentId = 'did:ope:test-document'
+    const serviceId = 'service-1'
+    const consumerAddress = '0xd727fb9be39fa019d7c02fea19e54d688da3a662'
+    const sessionContextHash = createHash('sha256')
+      .update(`${consumerAddress}:${documentId}:${serviceId}`)
+      .digest('hex')
+
+    const payload = {
+      action: 'startCompute',
+      documentId,
+      serviceId,
+      consumerAddress,
+      policyServer: [
+        {
+          documentId,
+          serviceId,
+          sessionId: `${sessionContextHash}-${'a'.repeat(64)}`,
+          successRedirectUri: 'https://example.com/success?id=$id',
+          errorRedirectUri: 'https://example.com/error?id=$id'
+        }
+      ],
+      ddo: {
+        credentialSubject: {
+          credentials: {
+            allow: [
+              {
+                values: ['*'],
+                type: 'address'
+              }
+            ],
+            deny: [] as any[],
+            match_deny: 'any'
+          },
+          services: [
+            {
+              id: serviceId,
+              credentials: {
+                allow: [
+                  {
+                    values: ['*'],
+                    type: 'address'
+                  }
+                ],
+                deny: [] as any[]
+              }
+            }
+          ]
+        }
+      }
+    }
+
+    const response = await handler.startCompute(payload as any)
+
+    expect(response.success).to.be.true
+    expect(response.httpStatus).to.equal(200)
+    expect(response.message.redirectUri).to.equal(
+      `https://example.com/success?id=${payload.policyServer[0].sessionId}`
     )
   })
 

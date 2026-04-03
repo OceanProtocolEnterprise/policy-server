@@ -215,7 +215,7 @@ export class WaltIdPolicyHandler extends PolicyHandler {
     const contextHash = this.buildSessionContextHash(requestPayload)
     const randomHash = createHash('sha256').update(randomBytes(32)).digest('hex')
 
-    return `${contextHash}.${randomHash}`
+    return `${contextHash}-${randomHash}`
   }
 
   private buildSessionContextHash(requestPayload: PolicyRequestPayload): string {
@@ -242,7 +242,7 @@ export class WaltIdPolicyHandler extends PolicyHandler {
     sessionId: string,
     requestPayload: PolicyRequestPayload
   ): boolean {
-    const [sessionContextHash, randomHash] = sessionId.split('.')
+    const [sessionContextHash, randomHash] = sessionId.split('-')
 
     if (!sessionContextHash || !randomHash) return false
     if (sessionContextHash.length !== 64 || randomHash.length !== 64) return false
@@ -423,8 +423,10 @@ export class WaltIdPolicyHandler extends PolicyHandler {
         requestPayload
       )
     ) {
-      return buildInvalidRequestMessage(
-        'Request body contains an invalid sessionId for the provided consumerAddress, documentId and serviceId'
+      return buildVerificationErrorRequestMessage(
+        'Access denied: sessionId does not match consumerAddress, documentId and serviceId.',
+        ERROR_CODES.ADDRESS_NOT_ALLOWED,
+        errorRedirectUri.replace('$id', requestPayload.policyServer.sessionId || '')
       )
     }
 
@@ -559,6 +561,19 @@ export class WaltIdPolicyHandler extends PolicyHandler {
       matchingPolicy.errorRedirectUri || process.env.WALTID_ERROR_REDIRECT_URL || ''
     const sessionId = matchingPolicy.sessionId || ''
 
+    if (!sessionId)
+      return buildInvalidRequestMessage(
+        'Request body does not contain available sessionId'
+      )
+
+    if (!this.isSessionIdValidForRequest(sessionId, requestPayload)) {
+      return buildVerificationErrorRequestMessage(
+        'Access denied: sessionId does not match consumerAddress, documentId and serviceId.',
+        ERROR_CODES.ADDRESS_NOT_ALLOWED,
+        errorRedirectUri.replace('$id', sessionId || '')
+      )
+    }
+
     const web3VerificationResult = this.verifyWeb3Address(requestPayload)
 
     if (!web3VerificationResult.success) {
@@ -580,11 +595,6 @@ export class WaltIdPolicyHandler extends PolicyHandler {
     }
 
     if (checkSSIPolicy.checkSSIPolicy) {
-      if (!sessionId)
-        return buildInvalidRequestMessage(
-          'Request body does not contain available sessionId'
-        )
-
       const url = new URL(
         `/openid4vc/session/${sessionId}`,
         process.env.WALTID_VERIFIER_URL
