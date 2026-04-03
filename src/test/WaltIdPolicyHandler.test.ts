@@ -256,7 +256,7 @@ describe('WaltIdPolicyHandler', () => {
   it('should reject download when sessionId does not match request context', async () => {
     const payload = {
       action: 'download',
-      documentId: 'did:ope:test-document',
+      documentId: 'did:ope:123',
       serviceId: 'service-1',
       consumerAddress: '0xd727fb9be39fa019d7c02fea19e54d688da3a662',
       policyServer: {
