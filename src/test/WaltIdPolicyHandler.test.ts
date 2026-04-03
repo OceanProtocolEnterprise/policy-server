@@ -4,6 +4,7 @@ import sinon from 'sinon'
 import axios from 'axios'
 import dotenv from 'dotenv'
 import path from 'path'
+import { createHash } from 'crypto'
 import { fileURLToPath } from 'url'
 import { WaltIdPolicyHandler } from '../handlers/waltIdPolicyHandler.js'
 
@@ -26,14 +27,17 @@ describe('WaltIdPolicyHandler', () => {
   it('should call initiate with valid payload', async () => {
     const payload = {
       action: 'initiate',
+      documentId:
+        'did:ope:1ec8435672854acf15ef3e61216900f314f8fae5e04e6b2fb0dc91c0579e0d02',
       sessionId: '',
       serviceId: 'ff294c2e2c7d01bd5f9701abc117737917bb1f91044ba6b2d0903fc806db0d65',
       consumerAddress: '0xd727fb9be39fa019d7c02fea19e54d688da3a662',
       policyServer: {
-        successRedirectUri: '',
-        errorRedirectUri: '',
-        responseRedirectUri: '',
-        presentationDefinitionUri: ''
+        sessionId: 'old-session-id',
+        successRedirectUri: 'https://example.com/success?id=$id',
+        errorRedirectUri: 'https://example.com/error?id=$id',
+        responseRedirectUri: 'https://example.com/verify/$id',
+        presentationDefinitionUri: 'https://example.com/pd/$id'
       },
       ddo: {
         '@context': ['https://www.w3.org/ns/credentials/v2'],
@@ -231,14 +235,113 @@ describe('WaltIdPolicyHandler', () => {
       }
     }
 
-    const stub = sinon.stub(axios, 'post').resolves({ status: 200, data: 'success' })
+    const stub = sinon.stub(axios, 'post').resolves({
+      status: 200,
+      data: 'openid-vc://?response_uri=https%3A%2F%2Fverifier.example%2Fcallback&presentation_definition_uri=https%3A%2F%2Fverifier.example%2Fpd'
+    })
 
     const response = await handler.initiate(payload as any)
-    console.log(JSON.stringify(response))
     expect(stub.calledOnce).to.be.true
     expect(response.success).to.be.true
-    expect(response.message).to.equal('success')
+    expect(response.message.sessionId).to.be.a('string')
+    expect(response.message.sessionId).to.match(/^[a-f0-9]{64}\.[a-f0-9]{64}$/)
+    expect(response.message.sessionId).to.not.equal('old-session-id')
+    expect(decodeURIComponent(response.message.redirectUri)).to.include(
+      `sessionId=${response.message.sessionId}`
+    )
+    expect(stub.firstCall.args[2]?.headers?.stateId).to.equal(response.message.sessionId)
     expect(response.httpStatus).to.equal(200)
+  })
+
+  it('should reject download when sessionId does not match request context', async () => {
+    const payload = {
+      action: 'download',
+      documentId: 'did:ope:test-document',
+      serviceId: 'service-1',
+      consumerAddress: '0xd727fb9be39fa019d7c02fea19e54d688da3a662',
+      policyServer: {
+        sessionId: `${'b'.repeat(64)}.${'a'.repeat(64)}`,
+        successRedirectUri: 'https://example.com/success?id=$id',
+        errorRedirectUri: 'https://example.com/error?id=$id'
+      },
+      ddo: {
+        credentialSubject: {
+          credentials: {
+            allow: [
+              {
+                values: ['*'],
+                type: 'address'
+              }
+            ],
+            deny: [] as any[],
+            match_deny: 'any'
+          },
+          services: [] as any[]
+        }
+      }
+    }
+
+    const response = await handler.download(payload as any)
+
+    expect(response.success).to.be.false
+    expect(response.message).to.include('invalid sessionId')
+  })
+
+  it('should call download with valid sessionId', async () => {
+    const documentId = 'did:ope:test-document'
+    const serviceId = 'service-1'
+    const consumerAddress = '0xd727fb9be39fa019d7c02fea19e54d688da3a662'
+    const sessionContextHash = createHash('sha256')
+      .update(`${consumerAddress}:${documentId}:${serviceId}`)
+      .digest('hex')
+
+    const payload = {
+      action: 'download',
+      documentId,
+      serviceId,
+      consumerAddress,
+      policyServer: {
+        sessionId: `${sessionContextHash}.${'a'.repeat(64)}`,
+        successRedirectUri: 'https://example.com/success?id=$id',
+        errorRedirectUri: 'https://example.com/error?id=$id'
+      },
+      ddo: {
+        credentialSubject: {
+          credentials: {
+            allow: [
+              {
+                values: ['*'],
+                type: 'address'
+              }
+            ],
+            deny: [] as any[],
+            match_deny: 'any'
+          },
+          services: [
+            {
+              id: serviceId,
+              credentials: {
+                allow: [
+                  {
+                    values: ['*'],
+                    type: 'address'
+                  }
+                ],
+                deny: [] as any[]
+              }
+            }
+          ]
+        }
+      }
+    }
+
+    const response = await handler.download(payload as any)
+
+    expect(response.success).to.be.true
+    expect(response.httpStatus).to.equal(200)
+    expect(response.message.redirectUri).to.equal(
+      `https://example.com/success?id=${payload.policyServer.sessionId}`
+    )
   })
 
   it('should call presentationRequest with valid payload', async () => {

@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 import axios from 'axios'
-import { randomUUID } from 'crypto'
+import { createHash, randomBytes } from 'crypto'
 import { PolicyRequestPayload, PolicyRequestResponse } from '../@types/policy.js'
 import { PolicyHandler } from '../policyHandler.js'
 import {
@@ -14,11 +14,7 @@ export class WaltIdPolicyHandler extends PolicyHandler {
   public async initiate(
     requestPayload: PolicyRequestPayload
   ): Promise<PolicyRequestResponse> {
-    const uuid =
-      requestPayload.policyServer?.sessionId &&
-      requestPayload.policyServer?.sessionId !== ''
-        ? requestPayload.policyServer?.sessionId
-        : randomUUID()
+    const sessionId = this.generateSessionId(requestPayload)
 
     const successRedirectUri = requestPayload.policyServer?.successRedirectUri
       ? requestPayload.policyServer.successRedirectUri
@@ -34,7 +30,7 @@ export class WaltIdPolicyHandler extends PolicyHandler {
       return buildVerificationErrorRequestMessage(
         web3VerificationResult.message || 'Web3 Address verification error',
         web3VerificationResult.code || ERROR_CODES.UNKNOWN_ERROR,
-        errorRedirectUri.replace('$id', uuid)
+        errorRedirectUri.replace('$id', sessionId)
       )
     }
 
@@ -44,7 +40,7 @@ export class WaltIdPolicyHandler extends PolicyHandler {
       return buildVerificationErrorRequestMessage(
         'SSIpolicy was found, but failed to fetch request credentials',
         ERROR_CODES.CREDENTIAL_FETCH_FAILED,
-        errorRedirectUri.replace('$id', uuid)
+        errorRedirectUri.replace('$id', sessionId)
       )
     }
 
@@ -53,7 +49,7 @@ export class WaltIdPolicyHandler extends PolicyHandler {
 
       const requestCredentialsBody = this.parseRequestCredentials(requestPayload)
       const headers = {
-        stateId: uuid,
+        stateId: sessionId,
         successRedirectUri,
         errorRedirectUri
       }
@@ -76,26 +72,33 @@ export class WaltIdPolicyHandler extends PolicyHandler {
       })
 
       const redirectUrl = requestPayload.policyServer?.responseRedirectUri
-        ? requestPayload.policyServer?.responseRedirectUri.replace('$id', uuid)
-        : process.env.WALTID_VERIFY_RESPONSE_REDIRECT_URL.replace('$id', uuid)
+        ? requestPayload.policyServer?.responseRedirectUri.replace('$id', sessionId)
+        : process.env.WALTID_VERIFY_RESPONSE_REDIRECT_URL.replace('$id', sessionId)
 
-      const definitionUrl = requestPayload.policyServer?.responseRedirectUri
-        ? requestPayload.policyServer?.presentationDefinitionUri.replace('$id', uuid)
-        : process.env.WALTID_VERIFY_PRESENTATION_DEFINITION_URL.replace('$id', uuid)
+      const definitionUrl = requestPayload.policyServer?.presentationDefinitionUri
+        ? requestPayload.policyServer?.presentationDefinitionUri.replace('$id', sessionId)
+        : process.env.WALTID_VERIFY_PRESENTATION_DEFINITION_URL.replace('$id', sessionId)
 
       const updatedResponseData = response.data
         .replace(
           /response_uri=([^&]*)/,
-          `response_uri=${encodeURIComponent(redirectUrl)}`
+          `response_uri=${encodeURIComponent(
+            this.appendSessionIdToUri(redirectUrl, sessionId)
+          )}`
         )
         .replace(
           /presentation_definition_uri=([^&]*)/,
-          `presentation_definition_uri=${encodeURIComponent(definitionUrl)}`
+          `presentation_definition_uri=${encodeURIComponent(
+            this.appendSessionIdToUri(definitionUrl, sessionId)
+          )}`
         )
 
       const policyResponse = {
         success: response.status === 200,
-        message: updatedResponseData,
+        message: {
+          sessionId,
+          redirectUri: updatedResponseData
+        },
         httpStatus: response.status
       }
 
@@ -105,7 +108,11 @@ export class WaltIdPolicyHandler extends PolicyHandler {
       const policyResponse = {
         success: true,
         message: {
-          redirectUri: successRedirectUri.replace('$id', uuid)
+          sessionId,
+          redirectUri: this.appendSessionIdToUri(
+            successRedirectUri.replace('$id', sessionId),
+            sessionId
+          )
         },
         httpStatus: 200
       }
@@ -202,6 +209,45 @@ export class WaltIdPolicyHandler extends PolicyHandler {
 
       return policyResponse
     }
+  }
+
+  private generateSessionId(requestPayload: PolicyRequestPayload): string {
+    const contextHash = this.buildSessionContextHash(requestPayload)
+    const randomHash = createHash('sha256').update(randomBytes(32)).digest('hex')
+
+    return `${contextHash}.${randomHash}`
+  }
+
+  private buildSessionContextHash(requestPayload: PolicyRequestPayload): string {
+    const consumerAddress = requestPayload.consumerAddress || ''
+    const documentId = requestPayload.documentId || requestPayload.ddo?.id || ''
+    const serviceId = requestPayload.serviceId || ''
+
+    return createHash('sha256')
+      .update(`${consumerAddress}:${documentId}:${serviceId}`)
+      .digest('hex')
+  }
+
+  private appendSessionIdToUri(uri: string, sessionId: string): string {
+    if (!uri) return uri
+
+    const [base, fragment] = uri.split('#', 2)
+    const separator = base.includes('?') ? '&' : '?'
+    const updatedBase = `${base}${separator}sessionId=${encodeURIComponent(sessionId)}`
+
+    return fragment ? `${updatedBase}#${fragment}` : updatedBase
+  }
+
+  private isSessionIdValidForRequest(
+    sessionId: string,
+    requestPayload: PolicyRequestPayload
+  ): boolean {
+    const [sessionContextHash, randomHash] = sessionId.split('.')
+
+    if (!sessionContextHash || !randomHash) return false
+    if (sessionContextHash.length !== 64 || randomHash.length !== 64) return false
+
+    return sessionContextHash === this.buildSessionContextHash(requestPayload)
   }
 
   public async getPD(
@@ -368,6 +414,20 @@ export class WaltIdPolicyHandler extends PolicyHandler {
       ? requestPayload.policyServer.errorRedirectUri
       : process.env.WALTID_ERROR_REDIRECT_URL || ''
 
+    if (!requestPayload.policyServer?.sessionId)
+      return buildInvalidRequestMessage('Request body does not contain sessionId')
+
+    if (
+      !this.isSessionIdValidForRequest(
+        requestPayload.policyServer.sessionId,
+        requestPayload
+      )
+    ) {
+      return buildInvalidRequestMessage(
+        'Request body contains an invalid sessionId for the provided consumerAddress, documentId and serviceId'
+      )
+    }
+
     const web3VerificationResult = this.verifyWeb3Address(requestPayload)
 
     if (!web3VerificationResult.success) {
@@ -389,9 +449,6 @@ export class WaltIdPolicyHandler extends PolicyHandler {
     }
 
     if (checkSSIPolicy.checkSSIPolicy) {
-      if (!requestPayload.policyServer?.sessionId)
-        return buildInvalidRequestMessage('Request body does not contain sessionId')
-
       const url = new URL(
         `/openid4vc/session/${requestPayload.policyServer.sessionId}`,
         process.env.WALTID_VERIFIER_URL
