@@ -424,7 +424,7 @@ export class WaltIdPolicyHandler extends PolicyHandler {
       )
     ) {
       return buildVerificationErrorRequestMessage(
-        'Access denied: sessionId does not match consumerAddress, documentId and serviceId.',
+        'Access denied: different requester or different asset/service.',
         ERROR_CODES.ADDRESS_NOT_ALLOWED,
         errorRedirectUri.replace('$id', requestPayload.policyServer.sessionId || '')
       )
@@ -568,7 +568,7 @@ export class WaltIdPolicyHandler extends PolicyHandler {
 
     if (!this.isSessionIdValidForRequest(sessionId, requestPayload)) {
       return buildVerificationErrorRequestMessage(
-        'Access denied: sessionId does not match consumerAddress, documentId and serviceId.',
+        'Access denied: different requester or different asset/service.',
         ERROR_CODES.ADDRESS_NOT_ALLOWED,
         errorRedirectUri.replace('$id', sessionId || '')
       )

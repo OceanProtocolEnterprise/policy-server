@@ -343,6 +343,7 @@ describe('WaltIdPolicyHandler', () => {
 
     expect(response.success).to.be.true
     expect(response.httpStatus).to.equal(200)
+    expect(response.message.redirectUri).to.include('success')
     expect(response.message.redirectUri).to.equal(
       `https://example.com/success?id=${payload.policyServer.sessionId}`
     )
@@ -459,6 +460,7 @@ describe('WaltIdPolicyHandler', () => {
 
     expect(response.success).to.be.true
     expect(response.httpStatus).to.equal(200)
+    expect(response.message.redirectUri).to.include('success')
     expect(response.message.redirectUri).to.equal(
       `https://example.com/success?id=${payload.policyServer[0].sessionId}`
     )
