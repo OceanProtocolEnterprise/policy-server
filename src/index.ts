@@ -12,19 +12,32 @@ import { downloadLogs } from './utils/logger.js'
 import dotenv from 'dotenv'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { policyServerApiKeyAuth } from './utils/auth.js'
+import { nodeAccessListApiKeyAuth, policyServerApiKeyAuth } from './utils/auth.js'
+import {
+  EnvNodeAccessListStore,
+  NodeRequestAuthenticator,
+  normalizeNodeAddresses
+} from './utils/nodeRequestAuth.js'
 
 dotenv.config()
 
-export function createApp(): express.Express {
+export function createApp(
+  nodeRequestAuthenticator: NodeRequestAuthenticator = NodeRequestAuthenticator.fromEnvironment()
+): express.Express {
   const app = express()
   const authType = process.env.AUTH_TYPE || 'waltid'
+  const nodeAccessListStore = EnvNodeAccessListStore.fromEnvironment()
 
   async function handlePolicyRequest(
     req: Request<{}, {}, PolicyRequestPayload>,
     res: Response
   ): Promise<void> {
     const { action, ...rest } = req.body
+    const authFailure = await nodeRequestAuthenticator.authenticate(req.body)
+    if (authFailure) {
+      res.status(authFailure.httpStatus).json(authFailure)
+      return
+    }
 
     const handler = PolicyHandlerFactory.createPolicyHandler(authType)
     if (handler == null) {
@@ -44,6 +57,52 @@ export function createApp(): express.Express {
   app.use(express.json())
 
   if (process.env.MODE_PS === '1') {
+    app.get(
+      '/node-access-list',
+      nodeAccessListApiKeyAuth,
+      (_req: Request, res: Response) => {
+        res.status(200).json({
+          success: true,
+          httpStatus: 200,
+          addresses: nodeAccessListStore.getAddresses()
+        })
+      }
+    )
+
+    app.post(
+      '/node-access-list',
+      nodeAccessListApiKeyAuth,
+      (req: Request<{}, {}, { addresses?: string[] }>, res: Response) => {
+        const { addresses } = req.body ?? {}
+
+        try {
+          if (!Array.isArray(addresses)) {
+            res.status(400).json({
+              success: false,
+              httpStatus: 400,
+              message: 'addresses must be an array of Ethereum addresses.'
+            })
+            return
+          }
+
+          nodeAccessListStore.setAddresses(normalizeNodeAddresses(addresses))
+        } catch {
+          res.status(400).json({
+            success: false,
+            httpStatus: 400,
+            message: 'Invalid Ethereum address in access list.'
+          })
+          return
+        }
+
+        res.status(200).json({
+          success: true,
+          httpStatus: 200,
+          addresses: nodeAccessListStore.getAddresses()
+        })
+      }
+    )
+
     app.post(
       '/',
       policyServerApiKeyAuth,

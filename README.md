@@ -23,6 +23,11 @@ MODE_PROXY=1
 MODE_PS=1
 # Optional: if set, POST / requires X-API-Key to match this value
 POLICY_SERVER_API_KEY=API_KEY_EXAMPLE
+# Optional: if set, GET/POST /node-access-list require this separate X-API-Key
+POLICY_SERVER_NODE_ACCESS_LIST_API_KEY=ACCESS_LIST_API_KEY_EXAMPLE
+# Comma-separated list of allowed Ocean Node addresses in `0x` + 40 hex format.
+# If this is empty or unset, node access-list authorization is disabled.
+POLICY_SERVER_NODE_ACCESS_LIST=0x1111111111111111111111111111111111111111,0x2222222222222222222222222222222222222222
 ```
 
 1. Start the Docker container:
@@ -39,6 +44,34 @@ POLICY_SERVER_API_KEY=API_KEY_EXAMPLE
 **Actions**
 
 `POLICY_SERVER_API_KEY` is optional. If it is configured, requests to `POST /` must include `X-API-Key: <POLICY_SERVER_API_KEY>`, and missing or invalid keys are rejected with `401 Unauthorized` before any action is processed. If it is not configured, the Policy Server accepts requests without API key authentication.
+
+`POLICY_SERVER_NODE_ACCESS_LIST_API_KEY` is separate. If it is configured, requests to `GET /node-access-list` and `POST /node-access-list` must include `X-API-Key: <POLICY_SERVER_NODE_ACCESS_LIST_API_KEY>`.
+
+When `POLICY_SERVER_NODE_ACCESS_LIST` contains one or more addresses, Ocean Node caller authorization on `POST /` is enabled. Every Ocean Node action request must include:
+
+- `nodeAddress`
+
+`nodeAddress` must match the `0x` + 40 hex address format and must be present in `POLICY_SERVER_NODE_ACCESS_LIST`.
+
+The API key can also protect access-list management endpoints:
+
+- `GET /node-access-list`
+- `POST /node-access-list`
+
+These endpoints use `POLICY_SERVER_NODE_ACCESS_LIST_API_KEY`, not `POLICY_SERVER_API_KEY`.
+
+`POST /node-access-list` accepts a JSON body like:
+
+```json
+{
+  "addresses": [
+    "0x1111111111111111111111111111111111111111",
+    "0x2222222222222222222222222222222222222222"
+  ]
+}
+```
+
+This replaces the in-memory list for the running server process and mirrors the values into `process.env`. Sending an empty array disables env-based node access-list authorization for newly created app instances.
 
 - `initiate`
 - `getPD`
@@ -65,6 +98,7 @@ POLICY_SERVER_API_KEY=API_KEY_EXAMPLE
 {
   "action": "initiate",
   "serviceId": "ff294c2e2c7d01bd5f9701abc117737917bb1f91044ba6b2d0903fc806db0d65",
+  "nodeAddress": "0xd727fb9be39fa019d7c02fea19e54d688da3a662",
   "consumerAddress": "0xd727fb9be39fa019d7c02fea19e54d688da3a662",
   "policyServer": {
     "sessionId": "",
@@ -565,6 +599,7 @@ Policy Server also replaces `response_uri` with `WALTID_VERIFY_RESPONSE_REDIRECT
 {
   "action": "download",
   "serviceId": "ff294c2e2c7d01bd5f9701abc117737917bb1f91044ba6b2d0903fc806db0d65",
+  "nodeAddress": "0xd727fb9be39fa019d7c02fea19e54d688da3a662",
   "consumerAddress": "0xd727fb9be39fa019d7c02fea19e54d688da3a662",
   "policyServer": {
     "successRedirectUri": "",
@@ -920,6 +955,7 @@ Policy Server also replaces `response_uri` with `WALTID_VERIFY_RESPONSE_REDIRECT
   "action": "startCompute",
   "documentId": "did1",
   "serviceId": "ff294c2e2c7d01bd5f9701abc117737917bb1f91044ba6b2d0903fc806db0d65",
+  "nodeAddress": "0xd727fb9be39fa019d7c02fea19e54d688da3a662",
   "consumerAddress": "0xd727fb9be39fa019d7c02fea19e54d688da3a662",
   "policyServer": [
     {
