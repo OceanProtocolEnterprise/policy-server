@@ -1,5 +1,4 @@
 import express, { Request, Response } from 'express'
-import swaggerDoc from '../swagger.json' assert { type: 'json' }
 import swaggerUi from 'swagger-ui-express'
 import { asyncHandler, requestLogger, errorHandler } from './utils/middleware.js'
 import { PolicyRequestPayload, PolicyRequestResponse } from './@types/policy'
@@ -10,16 +9,25 @@ import {
 } from './utils/verifyPresentationRequest.js'
 import { downloadLogs } from './utils/logger.js'
 import dotenv from 'dotenv'
+import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { nodeAccessListApiKeyAuth, policyServerApiKeyAuth } from './utils/auth.js'
 import {
+  EnvConsumerAccessListStore,
   EnvNodeAccessListStore,
   NodeRequestAuthenticator,
+  normalizeConsumerAddresses,
   normalizeNodeAddresses
 } from './utils/nodeRequestAuth.js'
 
 dotenv.config()
+
+const currentModulePath = fileURLToPath(import.meta.url)
+const currentModuleDir = path.dirname(currentModulePath)
+const swaggerDoc = JSON.parse(
+  fs.readFileSync(path.resolve(currentModuleDir, '../swagger.json'), 'utf-8')
+)
 
 export function createApp(
   nodeRequestAuthenticator: NodeRequestAuthenticator = NodeRequestAuthenticator.fromEnvironment()
@@ -27,6 +35,7 @@ export function createApp(
   const app = express()
   const authType = process.env.AUTH_TYPE || 'waltid'
   const nodeAccessListStore = EnvNodeAccessListStore.fromEnvironment()
+  const consumerAccessListStore = EnvConsumerAccessListStore.fromEnvironment()
 
   async function handlePolicyRequest(
     req: Request<{}, {}, PolicyRequestPayload>,
@@ -103,6 +112,52 @@ export function createApp(
       }
     )
 
+    app.get(
+      '/consumer-access-list',
+      nodeAccessListApiKeyAuth,
+      (_req: Request, res: Response) => {
+        res.status(200).json({
+          success: true,
+          httpStatus: 200,
+          addresses: consumerAccessListStore.getAddresses()
+        })
+      }
+    )
+
+    app.post(
+      '/consumer-access-list',
+      nodeAccessListApiKeyAuth,
+      (req: Request<{}, {}, { addresses?: string[] }>, res: Response) => {
+        const { addresses } = req.body ?? {}
+
+        try {
+          if (!Array.isArray(addresses)) {
+            res.status(400).json({
+              success: false,
+              httpStatus: 400,
+              message: 'addresses must be an array of Ethereum addresses.'
+            })
+            return
+          }
+
+          consumerAccessListStore.setAddresses(normalizeConsumerAddresses(addresses))
+        } catch {
+          res.status(400).json({
+            success: false,
+            httpStatus: 400,
+            message: 'Invalid Ethereum address in access list.'
+          })
+          return
+        }
+
+        res.status(200).json({
+          success: true,
+          httpStatus: 200,
+          addresses: consumerAccessListStore.getAddresses()
+        })
+      }
+    )
+
     app.post(
       '/',
       policyServerApiKeyAuth,
@@ -129,8 +184,6 @@ export function createApp(
 }
 
 export const app = createApp()
-
-const currentModulePath = fileURLToPath(import.meta.url)
 const entrypointPath = process.argv[1] ? path.resolve(process.argv[1]) : ''
 
 if (entrypointPath === currentModulePath) {

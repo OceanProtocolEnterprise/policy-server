@@ -23,11 +23,13 @@ MODE_PROXY=1
 MODE_PS=1
 # Optional: if set, POST / requires X-API-Key to match this value
 POLICY_SERVER_API_KEY=API_KEY_EXAMPLE
-# Optional: if set, GET/POST /node-access-list require this separate X-API-Key
-POLICY_SERVER_NODE_ACCESS_LIST_API_KEY=ACCESS_LIST_API_KEY_EXAMPLE
+# Optional: if set, GET/POST access-list management endpoints require this X-API-Key
+POLICY_SERVER_ACCESS_LIST_API_KEY=ACCESS_LIST_API_KEY_EXAMPLE
 # Comma-separated list of allowed Ocean Node addresses in `0x` + 40 hex format.
 # If this is empty or unset, node access-list authorization is disabled.
 POLICY_SERVER_NODE_ACCESS_LIST=0x1111111111111111111111111111111111111111,0x2222222222222222222222222222222222222222
+# Comma-separated list of allowed consumer addresses in `0x` + 40 hex format.
+POLICY_SERVER_CONSUMER_ACCESS_LIST=0x3333333333333333333333333333333333333333,0x4444444444444444444444444444444444444444
 ```
 
 1. Start the Docker container:
@@ -45,7 +47,7 @@ POLICY_SERVER_NODE_ACCESS_LIST=0x1111111111111111111111111111111111111111,0x2222
 
 `POLICY_SERVER_API_KEY` is optional. If it is configured, requests to `POST /` must include `X-API-Key: <POLICY_SERVER_API_KEY>`, and missing or invalid keys are rejected with `401 Unauthorized` before any action is processed. If it is not configured, the Policy Server accepts requests without API key authentication.
 
-`POLICY_SERVER_NODE_ACCESS_LIST_API_KEY` is separate. If it is configured, requests to `GET /node-access-list` and `POST /node-access-list` must include `X-API-Key: <POLICY_SERVER_NODE_ACCESS_LIST_API_KEY>`.
+`POLICY_SERVER_ACCESS_LIST_API_KEY` is separate. If it is configured, requests to `GET /node-access-list`, `POST /node-access-list`, `GET /consumer-access-list`, and `POST /consumer-access-list` must include `X-API-Key: <POLICY_SERVER_ACCESS_LIST_API_KEY>`.
 
 When `POLICY_SERVER_NODE_ACCESS_LIST` contains one or more addresses, Ocean Node caller authorization on `POST /` is enabled. Every Ocean Node action request must include:
 
@@ -57,8 +59,10 @@ The API key can also protect access-list management endpoints:
 
 - `GET /node-access-list`
 - `POST /node-access-list`
+- `GET /consumer-access-list`
+- `POST /consumer-access-list`
 
-These endpoints use `POLICY_SERVER_NODE_ACCESS_LIST_API_KEY`, not `POLICY_SERVER_API_KEY`.
+These endpoints use `POLICY_SERVER_ACCESS_LIST_API_KEY`, not `POLICY_SERVER_API_KEY`.
 
 `POST /node-access-list` accepts a JSON body like:
 
@@ -72,6 +76,8 @@ These endpoints use `POLICY_SERVER_NODE_ACCESS_LIST_API_KEY`, not `POLICY_SERVER
 ```
 
 This replaces the in-memory list for the running server process and mirrors the values into `process.env`. Sending an empty array disables env-based node access-list authorization for newly created app instances.
+
+`POST /consumer-access-list` accepts the same JSON body shape and updates `POLICY_SERVER_CONSUMER_ACCESS_LIST`. Consumer-address validation is implemented separately and is not yet wired into the existing policy request flow.
 
 - `initiate`
 - `getPD`

@@ -1403,6 +1403,123 @@
           }
         }
       }
+    },
+    "/consumer-access-list": {
+      "get": {
+        "summary": "Get consumer access list",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-API-Key",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "access-list admin secret."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current consumer access list.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "httpStatus": {
+                      "type": "integer"
+                    },
+                    "addresses": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      },
+      "post": {
+        "summary": "Replace consumer access list",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-API-Key",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "access-list admin secret."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["addresses"],
+                "properties": {
+                  "addresses": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Full replacement list of allowed consumer addresses."
+                  }
+                }
+              },
+              "example": {
+                "addresses": [
+                  "0x3333333333333333333333333333333333333333",
+                  "0x4444444444444444444444444444444444444444"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated consumer access list.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "httpStatus": {
+                      "type": "integer"
+                    },
+                    "addresses": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid payload"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
     }
   }
 }

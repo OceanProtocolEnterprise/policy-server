@@ -4,6 +4,8 @@ import request from 'supertest'
 import sinon from 'sinon'
 import { createApp } from '../index.js'
 import {
+  ConsumerRequestAuthenticator,
+  EnvConsumerAccessListStore,
   EnvNodeAccessListStore,
   NodeRequestAuthenticator,
   type AccessListAuthorizer
@@ -11,6 +13,7 @@ import {
 import { PolicyHandlerFactory } from '../policyHandlerFactory.js'
 
 const allowedNodeAddress = '0x1111111111111111111111111111111111111111'
+const allowedConsumerAddress = '0x3333333333333333333333333333333333333333'
 
 describe('NodeRequestAuthenticator', () => {
   const originalModePs = process.env.MODE_PS
@@ -114,26 +117,71 @@ describe('NodeRequestAuthenticator', () => {
   })
 })
 
+describe('ConsumerRequestAuthenticator', () => {
+  it('allows an authorized consumer', async () => {
+    const accessListAuthorizer: AccessListAuthorizer = {
+      isAllowed: () => true
+    }
+    const authenticator = new ConsumerRequestAuthenticator(true, accessListAuthorizer)
+
+    const response =
+      await authenticator.authenticateConsumerAddress(allowedConsumerAddress)
+
+    expect(response).to.equal(null)
+  })
+
+  it('rejects an invalid consumer address', async () => {
+    const accessListAuthorizer: AccessListAuthorizer = {
+      isAllowed: () => true
+    }
+    const authenticator = new ConsumerRequestAuthenticator(true, accessListAuthorizer)
+
+    const response = await authenticator.authenticateConsumerAddress('not-an-address')
+
+    expect(response?.httpStatus).to.equal(401)
+    expect(response?.message).to.equal('Invalid consumerAddress format.')
+  })
+
+  it('rejects a consumer outside the access list', async () => {
+    const accessListAuthorizer: AccessListAuthorizer = {
+      isAllowed: () => false
+    }
+    const authenticator = new ConsumerRequestAuthenticator(true, accessListAuthorizer)
+
+    const response =
+      await authenticator.authenticateConsumerAddress(allowedConsumerAddress)
+
+    expect(response?.httpStatus).to.equal(403)
+    expect(response?.message).to.include('not authorized')
+  })
+})
+
 describe('Node access list management API', () => {
   const originalModePs = process.env.MODE_PS
-  const originalNodeAccessListApiKey = process.env.POLICY_SERVER_NODE_ACCESS_LIST_API_KEY
+  const originalAccessListApiKey = process.env.POLICY_SERVER_ACCESS_LIST_API_KEY
   const originalNodeAccessList = process.env.POLICY_SERVER_NODE_ACCESS_LIST
-  const testNodeAccessListApiKey =
-    process.env.POLICY_SERVER_NODE_ACCESS_LIST_API_KEY ?? 'list-secret'
+  const originalConsumerAccessList = process.env.POLICY_SERVER_CONSUMER_ACCESS_LIST
+  const testAccessListApiKey =
+    process.env.POLICY_SERVER_ACCESS_LIST_API_KEY ?? 'list-secret'
 
   beforeEach(() => {
     process.env.MODE_PS = '1'
-    process.env.POLICY_SERVER_NODE_ACCESS_LIST_API_KEY = testNodeAccessListApiKey
+    process.env.POLICY_SERVER_ACCESS_LIST_API_KEY = testAccessListApiKey
     process.env.POLICY_SERVER_NODE_ACCESS_LIST =
       '0x1111111111111111111111111111111111111111'
+    process.env.POLICY_SERVER_CONSUMER_ACCESS_LIST =
+      '0x3333333333333333333333333333333333333333'
     EnvNodeAccessListStore.resetSharedFromEnvironment()
+    EnvConsumerAccessListStore.resetSharedFromEnvironment()
   })
 
   afterEach(() => {
     process.env.MODE_PS = originalModePs
-    process.env.POLICY_SERVER_NODE_ACCESS_LIST_API_KEY = originalNodeAccessListApiKey
+    process.env.POLICY_SERVER_ACCESS_LIST_API_KEY = originalAccessListApiKey
     process.env.POLICY_SERVER_NODE_ACCESS_LIST = originalNodeAccessList
+    process.env.POLICY_SERVER_CONSUMER_ACCESS_LIST = originalConsumerAccessList
     EnvNodeAccessListStore.resetSharedFromEnvironment()
+    EnvConsumerAccessListStore.resetSharedFromEnvironment()
   })
 
   it('returns the current access list', async () => {
@@ -141,7 +189,7 @@ describe('Node access list management API', () => {
 
     const response = await request(app)
       .get('/node-access-list')
-      .set('x-api-key', testNodeAccessListApiKey)
+      .set('x-api-key', testAccessListApiKey)
 
     expect(response.status).to.equal(200)
     expect(response.body.addresses).to.deep.equal([
@@ -154,7 +202,7 @@ describe('Node access list management API', () => {
 
     const response = await request(app)
       .post('/node-access-list')
-      .set('x-api-key', testNodeAccessListApiKey)
+      .set('x-api-key', testAccessListApiKey)
       .send({
         addresses: ['0x2222222222222222222222222222222222222222']
       })
@@ -175,7 +223,7 @@ describe('Node access list management API', () => {
 
     await request(app)
       .post('/node-access-list')
-      .set('x-api-key', testNodeAccessListApiKey)
+      .set('x-api-key', testAccessListApiKey)
       .send({
         addresses: ['0x2222222222222222222222222222222222222222']
       })
@@ -206,7 +254,7 @@ describe('Node access list management API', () => {
 
     const response = await request(app)
       .post('/node-access-list')
-      .set('x-api-key', testNodeAccessListApiKey)
+      .set('x-api-key', testAccessListApiKey)
       .send({
         addresses: ['not-an-address']
       })
@@ -220,7 +268,7 @@ describe('Node access list management API', () => {
 
     const response = await request(app)
       .post('/node-access-list')
-      .set('x-api-key', testNodeAccessListApiKey)
+      .set('x-api-key', testAccessListApiKey)
       .send({
         addresses: []
       })
@@ -228,5 +276,37 @@ describe('Node access list management API', () => {
     expect(response.status).to.equal(200)
     expect(response.body.addresses).to.deep.equal([])
     expect(process.env.POLICY_SERVER_NODE_ACCESS_LIST).to.equal('')
+  })
+
+  it('returns the current consumer access list', async () => {
+    const app = createApp()
+
+    const response = await request(app)
+      .get('/consumer-access-list')
+      .set('x-api-key', testAccessListApiKey)
+
+    expect(response.status).to.equal(200)
+    expect(response.body.addresses).to.deep.equal([
+      '0x3333333333333333333333333333333333333333'
+    ])
+  })
+
+  it('updates the consumer access list', async () => {
+    const app = createApp()
+
+    const response = await request(app)
+      .post('/consumer-access-list')
+      .set('x-api-key', testAccessListApiKey)
+      .send({
+        addresses: ['0x4444444444444444444444444444444444444444']
+      })
+
+    expect(response.status).to.equal(200)
+    expect(response.body.addresses).to.deep.equal([
+      '0x4444444444444444444444444444444444444444'
+    ])
+    expect(process.env.POLICY_SERVER_CONSUMER_ACCESS_LIST).to.equal(
+      '0x4444444444444444444444444444444444444444'
+    )
   })
 })
