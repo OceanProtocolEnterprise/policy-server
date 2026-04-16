@@ -1,5 +1,4 @@
 import express, { Request, Response } from 'express'
-import swaggerDoc from '../swagger.json' assert { type: 'json' }
 import swaggerUi from 'swagger-ui-express'
 import { asyncHandler, requestLogger, errorHandler } from './utils/middleware.js'
 import { PolicyRequestPayload, PolicyRequestResponse } from './@types/policy'
@@ -11,29 +10,35 @@ import {
 import { downloadLogs } from './utils/logger.js'
 import dotenv from 'dotenv'
 import path from 'path'
+import { createRequire } from 'module'
 import { fileURLToPath } from 'url'
-import { nodeAccessListApiKeyAuth, policyServerApiKeyAuth } from './utils/auth.js'
+import { adminApiKeyAuth, policyServerApiKeyAuth } from './utils/auth.js'
 import {
+  EnvConsumerAccessListStore,
   EnvNodeAccessListStore,
-  NodeRequestAuthenticator,
-  normalizeNodeAddresses
+  PolicyRequestAuthenticator,
+  RequestAuthenticator,
+  initializeSharedAccessListStoresFromEnvironment
 } from './utils/nodeRequestAuth.js'
 
 dotenv.config()
+const require = createRequire(import.meta.url)
+const swaggerDoc = require('../swagger.json')
 
 export function createApp(
-  nodeRequestAuthenticator: NodeRequestAuthenticator = NodeRequestAuthenticator.fromEnvironment()
+  requestAuthenticator: RequestAuthenticator = PolicyRequestAuthenticator.fromEnvironment()
 ): express.Express {
   const app = express()
   const authType = process.env.AUTH_TYPE || 'waltid'
   const nodeAccessListStore = EnvNodeAccessListStore.fromEnvironment()
+  const consumerAccessListStore = EnvConsumerAccessListStore.fromEnvironment()
 
   async function handlePolicyRequest(
     req: Request<{}, {}, PolicyRequestPayload>,
     res: Response
   ): Promise<void> {
     const { action, ...rest } = req.body
-    const authFailure = await nodeRequestAuthenticator.authenticate(req.body)
+    const authFailure = await requestAuthenticator.authenticate(req.body)
     if (authFailure) {
       res.status(authFailure.httpStatus).json(authFailure)
       return
@@ -57,49 +62,71 @@ export function createApp(
   app.use(express.json())
 
   if (process.env.MODE_PS === '1') {
-    app.get(
-      '/node-access-list',
-      nodeAccessListApiKeyAuth,
-      (_req: Request, res: Response) => {
-        res.status(200).json({
-          success: true,
-          httpStatus: 200,
-          addresses: nodeAccessListStore.getAddresses()
-        })
+    app.get('/listAcceptedNodes', adminApiKeyAuth, (_req: Request, res: Response) => {
+      res.status(200).json({
+        success: true,
+        httpStatus: 200,
+        enabled: nodeAccessListStore.isEnabled(),
+        addresses: nodeAccessListStore.getAddresses()
+      })
+    })
+
+    app.post(
+      '/reloadAcceptedNodes',
+      adminApiKeyAuth,
+      async (_req: Request, res: Response) => {
+        try {
+          await nodeAccessListStore.reloadFromEnvironment()
+          res.status(200).json({
+            success: true,
+            httpStatus: 200,
+            enabled: nodeAccessListStore.isEnabled(),
+            addresses: nodeAccessListStore.getAddresses()
+          })
+        } catch (error) {
+          res.status(500).json({
+            success: false,
+            httpStatus: 500,
+            message:
+              error instanceof Error
+                ? error.message
+                : 'Failed to reload accepted node addresses.'
+          })
+        }
       }
     )
 
+    app.get('/listAcceptedConsumers', adminApiKeyAuth, (_req: Request, res: Response) => {
+      res.status(200).json({
+        success: true,
+        httpStatus: 200,
+        enabled: consumerAccessListStore.isEnabled(),
+        addresses: consumerAccessListStore.getAddresses()
+      })
+    })
+
     app.post(
-      '/node-access-list',
-      nodeAccessListApiKeyAuth,
-      (req: Request<{}, {}, { addresses?: string[] }>, res: Response) => {
-        const { addresses } = req.body ?? {}
-
+      '/reloadAcceptedConsumers',
+      adminApiKeyAuth,
+      async (_req: Request, res: Response) => {
         try {
-          if (!Array.isArray(addresses)) {
-            res.status(400).json({
-              success: false,
-              httpStatus: 400,
-              message: 'addresses must be an array of Ethereum addresses.'
-            })
-            return
-          }
-
-          nodeAccessListStore.setAddresses(normalizeNodeAddresses(addresses))
-        } catch {
-          res.status(400).json({
-            success: false,
-            httpStatus: 400,
-            message: 'Invalid Ethereum address in access list.'
+          await consumerAccessListStore.reloadFromEnvironment()
+          res.status(200).json({
+            success: true,
+            httpStatus: 200,
+            enabled: consumerAccessListStore.isEnabled(),
+            addresses: consumerAccessListStore.getAddresses()
           })
-          return
+        } catch (error) {
+          res.status(500).json({
+            success: false,
+            httpStatus: 500,
+            message:
+              error instanceof Error
+                ? error.message
+                : 'Failed to reload accepted consumer addresses.'
+          })
         }
-
-        res.status(200).json({
-          success: true,
-          httpStatus: 200,
-          addresses: nodeAccessListStore.getAddresses()
-        })
       }
     )
 
@@ -128,6 +155,7 @@ export function createApp(
   return app
 }
 
+await initializeSharedAccessListStoresFromEnvironment()
 export const app = createApp()
 
 const currentModulePath = fileURLToPath(import.meta.url)

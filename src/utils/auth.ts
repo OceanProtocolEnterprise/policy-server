@@ -63,7 +63,7 @@ export const policyServerApiKeyAuth = createApiKeyAuth(
   'Policy Server API key authentication failed.'
 )
 
-export const nodeAccessListApiKeyAuth = createApiKeyAuth(
-  'POLICY_SERVER_NODE_ACCESS_LIST_API_KEY',
-  'Node access list API key authentication failed.'
+export const adminApiKeyAuth = createApiKeyAuth(
+  'ADMIN_API_KEY',
+  'Administrative API key authentication failed.'
 )
