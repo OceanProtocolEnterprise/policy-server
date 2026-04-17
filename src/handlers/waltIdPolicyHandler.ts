@@ -944,7 +944,12 @@ export class WaltIdPolicyHandler extends PolicyHandler {
       service.credentials?.allow
     )
 
+    const assetDeniesAll = assetDenyList.includes('*')
+    const serviceDeniesAll = serviceDenyList.includes('*')
+
     if (
+      assetDeniesAll ||
+      serviceDeniesAll ||
       assetDenyList.includes(consumerAddress) ||
       serviceDenyList.includes(consumerAddress)
     ) {

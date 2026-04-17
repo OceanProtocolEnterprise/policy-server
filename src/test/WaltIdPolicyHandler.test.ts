@@ -253,6 +253,114 @@ describe('WaltIdPolicyHandler', () => {
     expect(response.httpStatus).to.equal(200)
   })
 
+  it('should reject initiate when asset deny list contains wildcard', async () => {
+    const payload = {
+      action: 'initiate',
+      documentId: 'did:ope:test-document',
+      serviceId: 'service-1',
+      consumerAddress: '0xd727fb9be39fa019d7c02fea19e54d688da3a662',
+      policyServer: {
+        successRedirectUri: 'https://example.com/success?id=$id',
+        errorRedirectUri: 'https://example.com/error?id=$id'
+      },
+      ddo: {
+        credentialSubject: {
+          credentials: {
+            allow: [
+              {
+                values: ['*'],
+                type: 'address'
+              }
+            ],
+            deny: [
+              {
+                values: [{ address: '*' }],
+                type: 'address'
+              }
+            ],
+            match_deny: 'any'
+          },
+          services: [
+            {
+              id: 'service-1',
+              credentials: {
+                allow: [
+                  {
+                    values: ['*'],
+                    type: 'address'
+                  }
+                ],
+                deny: [] as any[]
+              }
+            }
+          ]
+        }
+      }
+    }
+
+    const stub = sinon.stub(axios, 'post')
+    const response = await handler.initiate(payload as any)
+
+    expect(stub.called).to.be.false
+    expect(response.success).to.be.false
+    expect(response.httpStatus).to.equal(403)
+    expect(response.message.error).to.include('Access denied: Address is in deny list.')
+  })
+
+  it('should reject initiate when service deny list contains wildcard', async () => {
+    const payload = {
+      action: 'initiate',
+      documentId: 'did:ope:test-document',
+      serviceId: 'service-1',
+      consumerAddress: '0xd727fb9be39fa019d7c02fea19e54d688da3a662',
+      policyServer: {
+        successRedirectUri: 'https://example.com/success?id=$id',
+        errorRedirectUri: 'https://example.com/error?id=$id'
+      },
+      ddo: {
+        credentialSubject: {
+          credentials: {
+            allow: [
+              {
+                values: ['*'],
+                type: 'address'
+              }
+            ],
+            deny: [] as any[],
+            match_deny: 'any'
+          },
+          services: [
+            {
+              id: 'service-1',
+              credentials: {
+                allow: [
+                  {
+                    values: ['*'],
+                    type: 'address'
+                  }
+                ],
+                deny: [
+                  {
+                    values: [{ address: '*' }],
+                    type: 'address'
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+
+    const stub = sinon.stub(axios, 'post')
+    const response = await handler.initiate(payload as any)
+
+    expect(stub.called).to.be.false
+    expect(response.success).to.be.false
+    expect(response.httpStatus).to.equal(403)
+    expect(response.message.error).to.include('Access denied: Address is in deny list.')
+  })
+
   it('should reject download when sessionId does not match request context', async () => {
     const payload = {
       action: 'download',
