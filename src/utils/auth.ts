@@ -29,33 +29,41 @@ function isApiKeyValid(providedApiKey: string, expectedApiKey: string): boolean 
   return timingSafeEqual(providedBuffer, expectedBuffer)
 }
 
-export const policyServerApiKeyAuth: RequestHandler = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): void => {
-  const expectedApiKey = process.env.POLICY_SERVER_API_KEY?.trim()
+function createApiKeyAuth(envVarName: string, failureMessage: string): RequestHandler {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    const expectedApiKey = process.env[envVarName]?.trim()
 
-  if (!expectedApiKey) {
+    if (!expectedApiKey) {
+      next()
+      return
+    }
+
+    const providedApiKey = req.get(API_KEY_HEADER)
+    if (!providedApiKey || !isApiKeyValid(providedApiKey, expectedApiKey)) {
+      logWarn({
+        method: req.method,
+        url: req.originalUrl,
+        headers: redactSensitiveHeaders(req.headers),
+        message: failureMessage
+      })
+      res.status(401).json({
+        success: false,
+        message: 'Unauthorized',
+        httpStatus: 401
+      })
+      return
+    }
+
     next()
-    return
   }
-
-  const providedApiKey = req.get(API_KEY_HEADER)
-  if (!providedApiKey || !isApiKeyValid(providedApiKey, expectedApiKey)) {
-    logWarn({
-      method: req.method,
-      url: req.originalUrl,
-      headers: redactSensitiveHeaders(req.headers),
-      message: 'Policy Server API key authentication failed.'
-    })
-    res.status(401).json({
-      success: false,
-      message: 'Unauthorized',
-      httpStatus: 401
-    })
-    return
-  }
-
-  next()
 }
+
+export const policyServerApiKeyAuth = createApiKeyAuth(
+  'POLICY_SERVER_API_KEY',
+  'Policy Server API key authentication failed.'
+)
+
+export const adminApiKeyAuth = createApiKeyAuth(
+  'ADMIN_API_KEY',
+  'Administrative API key authentication failed.'
+)

@@ -23,6 +23,16 @@ MODE_PROXY=1
 MODE_PS=1
 # Optional: if set, POST / requires X-API-Key to match this value
 POLICY_SERVER_API_KEY=API_KEY_EXAMPLE
+# Optional: if set, admin maintenance endpoints require this X-API-Key
+ADMIN_API_KEY=ADMIN_API_KEY_EXAMPLE
+# Comma-separated list of allowed Ocean Node addresses in `0x` + 40 hex format.
+# If this is empty or unset, node access-list authorization is disabled.
+POLICY_SERVER_NODE_ACCESS_LIST=0x1111111111111111111111111111111111111111,0x2222222222222222222222222222222222222222
+POLICY_SERVER_NODE_ACCESS_LIST_URL=https://example.com/trustedNodes
+# Comma-separated list of allowed consumer addresses in `0x` + 40 hex format.
+# If this is empty or unset, consumer access-list authorization is disabled.
+POLICY_SERVER_CONSUMER_ACCESS_LIST=0x7777777777777777777777777777777777777777,0x8888888888888888888888888888888888888888
+POLICY_SERVER_CONSUMER_ACCESS_LIST_URL=https://example.com/trustedConsumers
 ```
 
 1. Start the Docker container:
@@ -39,6 +49,33 @@ POLICY_SERVER_API_KEY=API_KEY_EXAMPLE
 **Actions**
 
 `POLICY_SERVER_API_KEY` is optional. If it is configured, requests to `POST /` must include `X-API-Key: <POLICY_SERVER_API_KEY>`, and missing or invalid keys are rejected with `401 Unauthorized` before any action is processed. If it is not configured, the Policy Server accepts requests without API key authentication.
+
+`ADMIN_API_KEY` is optional. If it is configured, requests to the administrative maintenance endpoints must include `X-API-Key: <ADMIN_API_KEY>`.
+
+When `POLICY_SERVER_NODE_ACCESS_LIST` and/or `POLICY_SERVER_NODE_ACCESS_LIST_URL` provide one or more addresses, Ocean Node caller authorization on `POST /` is enabled. Every Ocean Node action request must include:
+
+- `nodeAddress`
+
+`nodeAddress` must match the `0x` + 40 hex address format and must be present in the merged node access list loaded from `POLICY_SERVER_NODE_ACCESS_LIST` and `POLICY_SERVER_NODE_ACCESS_LIST_URL`.
+
+When `POLICY_SERVER_CONSUMER_ACCESS_LIST` and/or `POLICY_SERVER_CONSUMER_ACCESS_LIST_URL` provide one or more addresses, consumer authorization is enabled for:
+
+- `encrypt`
+- `decrypt`
+- `validateDDO` using `publisherAddress`
+
+These requests must include the caller address, and it must be present in the merged consumer access list loaded from `POLICY_SERVER_CONSUMER_ACCESS_LIST` and `POLICY_SERVER_CONSUMER_ACCESS_LIST_URL`.
+Use `consumerAddress` for the consumer-driven actions and `publisherAddress` for `validateDDO`.
+`checkSessionId` and `presentationRequest` remain node-only.
+
+Administrative endpoints:
+
+- `GET /listAcceptedNodes`
+- `POST /reloadAcceptedNodes`
+- `GET /listAcceptedConsumers`
+- `POST /reloadAcceptedConsumers`
+
+The reload endpoints rebuild the in-memory lists from the current env values plus the configured URL files.
 
 - `initiate`
 - `getPD`
@@ -65,6 +102,7 @@ POLICY_SERVER_API_KEY=API_KEY_EXAMPLE
 {
   "action": "initiate",
   "serviceId": "ff294c2e2c7d01bd5f9701abc117737917bb1f91044ba6b2d0903fc806db0d65",
+  "nodeAddress": "0xd727fb9be39fa019d7c02fea19e54d688da3a662",
   "consumerAddress": "0xd727fb9be39fa019d7c02fea19e54d688da3a662",
   "policyServer": {
     "sessionId": "",
@@ -565,6 +603,7 @@ Policy Server also replaces `response_uri` with `WALTID_VERIFY_RESPONSE_REDIRECT
 {
   "action": "download",
   "serviceId": "ff294c2e2c7d01bd5f9701abc117737917bb1f91044ba6b2d0903fc806db0d65",
+  "nodeAddress": "0xd727fb9be39fa019d7c02fea19e54d688da3a662",
   "consumerAddress": "0xd727fb9be39fa019d7c02fea19e54d688da3a662",
   "policyServer": {
     "successRedirectUri": "",
@@ -920,6 +959,7 @@ Policy Server also replaces `response_uri` with `WALTID_VERIFY_RESPONSE_REDIRECT
   "action": "startCompute",
   "documentId": "did1",
   "serviceId": "ff294c2e2c7d01bd5f9701abc117737917bb1f91044ba6b2d0903fc806db0d65",
+  "nodeAddress": "0xd727fb9be39fa019d7c02fea19e54d688da3a662",
   "consumerAddress": "0xd727fb9be39fa019d7c02fea19e54d688da3a662",
   "policyServer": [
     {
@@ -1320,6 +1360,7 @@ Policy Server also replaces `response_uri` with `WALTID_VERIFY_RESPONSE_REDIRECT
 ```json
 {
   "action": "newDDO",
+  "nodeAddress": "0x1111111111111111111111111111111111111111",
   "rawDDO": {},
   "chainId": 1,
   "txId": "0x123",
@@ -1338,6 +1379,7 @@ Policy Server also replaces `response_uri` with `WALTID_VERIFY_RESPONSE_REDIRECT
 ```json
 {
   "action": "updateDDO",
+  "nodeAddress": "0x1111111111111111111111111111111111111111",
   "rawDDO": {},
   "chainId": 1,
   "txId": "0x123",
@@ -1355,7 +1397,9 @@ Policy Server also replaces `response_uri` with `WALTID_VERIFY_RESPONSE_REDIRECT
 
 ```json
 {
-  "action": "updateDDO",
+  "action": "validateDDO",
+  "nodeAddress": "0x1111111111111111111111111111111111111111",
+  "publisherAddress": "0x7777777777777777777777777777777777777777",
   "rawDDO": {},
   "chainId": 1,
   "txId": "0x123",
@@ -1374,6 +1418,7 @@ Policy Server also replaces `response_uri` with `WALTID_VERIFY_RESPONSE_REDIRECT
 ```json
 {
   "action": "passthrough",
+  "nodeAddress": "0x1111111111111111111111111111111111111111",
   "url": "/openid4vc/verify",
   "httpMethod": "POST",
   "body": {

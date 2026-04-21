@@ -26,6 +26,7 @@
             "application/json": {
               "schema": {
                 "type": "object",
+                "additionalProperties": true,
                 "properties": {
                   "action": {
                     "type": "string",
@@ -34,13 +35,26 @@
                       "download",
                       "checkSessionId",
                       "presentationRequest",
+                      "encrypt",
+                      "decrypt",
+                      "newDDO",
+                      "updateDDO",
+                      "validateDDO",
                       "passthrough"
                     ],
                     "description": "Type of policy action to perform"
                   },
-                  "additionalProperties": {
-                    "type": "object",
-                    "description": "Additional parameters for the action"
+                  "nodeAddress": {
+                    "type": "string",
+                    "description": "Optional Ocean Node caller address. Required when POLICY_SERVER_NODE_ACCESS_LIST is configured."
+                  },
+                  "consumerAddress": {
+                    "type": "string",
+                    "description": "Optional consumer caller address. Required for initiate, download, startCompute, encrypt, and decrypt when POLICY_SERVER_CONSUMER_ACCESS_LIST is configured."
+                  },
+                  "publisherAddress": {
+                    "type": "string",
+                    "description": "Optional publisher caller address. Required for validateDDO when POLICY_SERVER_CONSUMER_ACCESS_LIST is configured."
                   }
                 }
               },
@@ -50,6 +64,7 @@
                   "value": {
                     "action": "initiate",
                     "serviceId": "ff294c2e2c7d01bd5f9701abc117737917bb1f91044ba6b2d0903fc806db0d65",
+                    "nodeAddress": "0x1111111111111111111111111111111111111111",
                     "consumerAddress": "0xd727fb9be39fa019d7c02fea19e54d688da3a662",
                     "policyServer": {
                       "sessionId": "",
@@ -59,9 +74,7 @@
                       "presentationDefinitionUri": ""
                     },
                     "ddo": {
-                      "@context": [
-                        "https://www.w3.org/ns/credentials/v2"
-                      ],
+                      "@context": ["https://www.w3.org/ns/credentials/v2"],
                       "id": "did:ope:1ec8435672854acf15ef3e61216900f314f8fae5e04e6b2fb0dc91c0579e0d02",
                       "version": "5.0.0",
                       "credentialSubject": {
@@ -88,9 +101,7 @@
                               "type": "SSIpolicy"
                             },
                             {
-                              "values": [
-                                "*"
-                              ],
+                              "values": ["*"],
                               "type": "address"
                             }
                           ],
@@ -108,9 +119,7 @@
                             "@direction": "",
                             "@language": ""
                           },
-                          "tags": [
-                            "test"
-                          ],
+                          "tags": ["test"],
                           "author": "",
                           "license": {
                             "name": "https://github.com/MBadea17/testdata/blob/af26d4f968fdb6e1882c2a3cca16a1480ca44a9c/License%20Agreement.pdf",
@@ -313,9 +322,7 @@
                         }
                       },
                       "additionalDdos": [],
-                      "type": [
-                        "VerifiableCredential"
-                      ],
+                      "type": ["VerifiableCredential"],
                       "issuer": "did:jwk:eyJrdHkiOiJPS1AiLCJkIjoiUnBVOU5ONmdFbGtvMXpjYnR1VVRERlVXWEZCeks1Um9FZ3FRaVFHMWN4QSIsImNydiI6IkVkMjU1MTkiLCJraWQiOiI1TS1od19JbTZDalJDZ3NCVXhGX0R2aWxRRnhfdVU5RWpNcUpPbzdQOERnIiwieCI6IklaeXo1WVl6WkpJYWN3R21ockstYXdCa2ZJWmRqbUFWWTViVjFIbGNxYjgifQ",
                       "proof": {
                         "signature": "N2GQRLQbDUM7gLlUNweF-JjP9XS1uAWHWZy-8NLdlBdPJFrdvVkZk1z6UntVqATkCZU-l8MMQP_5DyMDzws3DA",
@@ -402,14 +409,14 @@
                   "summary": "getPD action, returns presentation definition",
                   "value": {
                     "action": "getPD",
-                      "sessionId": ""
+                    "sessionId": ""
                   }
                 },
                 "checkSessionId": {
                   "summary": "Check Session Id action, returns presentation state object",
                   "value": {
                     "action": "checkSessionId",
-                      "sessionId": ""
+                    "sessionId": ""
                   }
                 },
                 "presentationRequest": {
@@ -417,9 +424,9 @@
                   "value": {
                     "action": "presentationRequest",
                     "sessionId": "",
-                      "vp_token": null,
-                      "response": null,
-                      "presentation_submission": null
+                    "vp_token": null,
+                    "response": null,
+                    "presentation_submission": null
                   }
                 },
                 "download": {
@@ -427,6 +434,7 @@
                   "value": {
                     "action": "download",
                     "serviceId": "ff294c2e2c7d01bd5f9701abc117737917bb1f91044ba6b2d0903fc806db0d65",
+                    "nodeAddress": "0x1111111111111111111111111111111111111111",
                     "consumerAddress": "0xd727fb9be39fa019d7c02fea19e54d688da3a662",
                     "policyServer": {
                       "successRedirectUri": "",
@@ -436,9 +444,7 @@
                       "presentationDefinitionUri": ""
                     },
                     "ddo": {
-                      "@context": [
-                        "https://www.w3.org/ns/credentials/v2"
-                      ],
+                      "@context": ["https://www.w3.org/ns/credentials/v2"],
                       "id": "did:ope:1ec8435672854acf15ef3e61216900f314f8fae5e04e6b2fb0dc91c0579e0d02",
                       "version": "5.0.0",
                       "credentialSubject": {
@@ -465,9 +471,7 @@
                               "type": "SSIpolicy"
                             },
                             {
-                              "values": [
-                                "*"
-                              ],
+                              "values": ["*"],
                               "type": "address"
                             }
                           ],
@@ -485,9 +489,7 @@
                             "@direction": "",
                             "@language": ""
                           },
-                          "tags": [
-                            "test"
-                          ],
+                          "tags": ["test"],
                           "author": "",
                           "license": {
                             "name": "https://github.com/MBadea17/testdata/blob/af26d4f968fdb6e1882c2a3cca16a1480ca44a9c/License%20Agreement.pdf",
@@ -690,9 +692,7 @@
                         }
                       },
                       "additionalDdos": [],
-                      "type": [
-                        "VerifiableCredential"
-                      ],
+                      "type": ["VerifiableCredential"],
                       "issuer": "did:jwk:eyJrdHkiOiJPS1AiLCJkIjoiUnBVOU5ONmdFbGtvMXpjYnR1VVRERlVXWEZCeks1Um9FZ3FRaVFHMWN4QSIsImNydiI6IkVkMjU1MTkiLCJraWQiOiI1TS1od19JbTZDalJDZ3NCVXhGX0R2aWxRRnhfdVU5RWpNcUpPbzdQOERnIiwieCI6IklaeXo1WVl6WkpJYWN3R21ockstYXdCa2ZJWmRqbUFWWTViVjFIbGNxYjgifQ",
                       "proof": {
                         "signature": "N2GQRLQbDUM7gLlUNweF-JjP9XS1uAWHWZy-8NLdlBdPJFrdvVkZk1z6UntVqATkCZU-l8MMQP_5DyMDzws3DA",
@@ -781,20 +781,21 @@
                     "action": "startCompute",
                     "documentId": "did1",
                     "serviceId": "ff294c2e2c7d01bd5f9701abc117737917bb1f91044ba6b2d0903fc806db0d65",
+                    "nodeAddress": "0x1111111111111111111111111111111111111111",
                     "consumerAddress": "0xd727fb9be39fa019d7c02fea19e54d688da3a662",
                     "policyServer": [
-                      { 
+                      {
                         "documentId": "did1",
-                        "serviceId": "ff294c2e2c7d01bd5f9701abc117737917bb1f91044ba6b2d0903fc806db0d65",    
+                        "serviceId": "ff294c2e2c7d01bd5f9701abc117737917bb1f91044ba6b2d0903fc806db0d65",
                         "successRedirectUri": "",
                         "sessionId": "",
                         "errorRedirectUri": "",
                         "responseRedirectUri": "",
                         "presentationDefinitionUri": ""
                       },
-                      { 
+                      {
                         "documentId": "did2",
-                        "serviceId": "service2",    
+                        "serviceId": "service2",
                         "successRedirectUri": "",
                         "sessionId": "",
                         "errorRedirectUri": "",
@@ -803,9 +804,7 @@
                       }
                     ],
                     "ddo": {
-                      "@context": [
-                        "https://www.w3.org/ns/credentials/v2"
-                      ],
+                      "@context": ["https://www.w3.org/ns/credentials/v2"],
                       "id": "did:ope:1ec8435672854acf15ef3e61216900f314f8fae5e04e6b2fb0dc91c0579e0d02",
                       "version": "5.0.0",
                       "credentialSubject": {
@@ -832,9 +831,7 @@
                               "type": "SSIpolicy"
                             },
                             {
-                              "values": [
-                                "*"
-                              ],
+                              "values": ["*"],
                               "type": "address"
                             }
                           ],
@@ -852,9 +849,7 @@
                             "@direction": "",
                             "@language": ""
                           },
-                          "tags": [
-                            "test"
-                          ],
+                          "tags": ["test"],
                           "author": "",
                           "license": {
                             "name": "https://github.com/MBadea17/testdata/blob/af26d4f968fdb6e1882c2a3cca16a1480ca44a9c/License%20Agreement.pdf",
@@ -1057,9 +1052,7 @@
                         }
                       },
                       "additionalDdos": [],
-                      "type": [
-                        "VerifiableCredential"
-                      ],
+                      "type": ["VerifiableCredential"],
                       "issuer": "did:jwk:eyJrdHkiOiJPS1AiLCJkIjoiUnBVOU5ONmdFbGtvMXpjYnR1VVRERlVXWEZCeks1Um9FZ3FRaVFHMWN4QSIsImNydiI6IkVkMjU1MTkiLCJraWQiOiI1TS1od19JbTZDalJDZ3NCVXhGX0R2aWxRRnhfdVU5RWpNcUpPbzdQOERnIiwieCI6IklaeXo1WVl6WkpJYWN3R21ockstYXdCa2ZJWmRqbUFWWTViVjFIbGNxYjgifQ",
                       "proof": {
                         "signature": "N2GQRLQbDUM7gLlUNweF-JjP9XS1uAWHWZy-8NLdlBdPJFrdvVkZk1z6UntVqATkCZU-l8MMQP_5DyMDzws3DA",
@@ -1146,6 +1139,8 @@
                   "summary": "Encrypt action",
                   "value": {
                     "action": "encrypt",
+                    "nodeAddress": "0x1111111111111111111111111111111111111111",
+                    "consumerAddress": "0x7777777777777777777777777777777777777777",
                     "policyServer": {}
                   }
                 },
@@ -1153,6 +1148,8 @@
                   "summary": "Decrypt action",
                   "value": {
                     "action": "decrypt",
+                    "nodeAddress": "0x1111111111111111111111111111111111111111",
+                    "consumerAddress": "0x7777777777777777777777777777777777777777",
                     "decrypterAddress": "0x123",
                     "chainId": 1,
                     "transactionId": "0x123",
@@ -1163,7 +1160,8 @@
                 "newDDO": {
                   "summary": "New DDO action",
                   "value": {
-                    "action":"newDDO",
+                    "action": "newDDO",
+                    "nodeAddress": "0x1111111111111111111111111111111111111111",
                     "rawDDO": {},
                     "chainId": 1,
                     "txId": "0x123",
@@ -1173,7 +1171,8 @@
                 "updateDDO": {
                   "summary": "Update DDO action",
                   "value": {
-                    "action":"updateDDO",
+                    "action": "updateDDO",
+                    "nodeAddress": "0x1111111111111111111111111111111111111111",
                     "rawDDO": {},
                     "chainId": 1,
                     "txId": "0x123",
@@ -1183,7 +1182,9 @@
                 "validateDDO": {
                   "summary": "Validate DDO action",
                   "value": {
-                    "action":"updateDDO",
+                    "action": "validateDDO",
+                    "nodeAddress": "0x1111111111111111111111111111111111111111",
+                    "publisherAddress": "0x7777777777777777777777777777777777777777",
                     "rawDDO": {},
                     "chainId": 1,
                     "txId": "0x123",
@@ -1194,6 +1195,7 @@
                   "summary": "Passthrough action",
                   "value": {
                     "action": "passthrough",
+                    "nodeAddress": "0x1111111111111111111111111111111111111111",
                     "url": "/url",
                     "httpMethod": "GET",
                     "body": {}
@@ -1300,6 +1302,204 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/listAcceptedNodes": {
+      "get": {
+        "summary": "List accepted node addresses",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-API-Key",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Administrative secret. Required only when ADMIN_API_KEY is configured."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current node access list.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "httpStatus": {
+                      "type": "integer"
+                    },
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "addresses": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/reloadAcceptedNodes": {
+      "post": {
+        "summary": "Reload accepted node addresses from env and URL",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-API-Key",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Administrative secret. Required only when ADMIN_API_KEY is configured."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reloaded node access list.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "httpStatus": {
+                      "type": "integer"
+                    },
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "addresses": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Reload failed"
+          }
+        }
+      }
+    },
+    "/listAcceptedConsumers": {
+      "get": {
+        "summary": "List accepted consumer addresses",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-API-Key",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Administrative secret. Required only when ADMIN_API_KEY is configured."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current consumer access list.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "httpStatus": {
+                      "type": "integer"
+                    },
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "addresses": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    },
+    "/reloadAcceptedConsumers": {
+      "post": {
+        "summary": "Reload accepted consumer addresses from env and URL",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-API-Key",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Administrative secret. Required only when ADMIN_API_KEY is configured."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Reloaded consumer access list.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "httpStatus": {
+                      "type": "integer"
+                    },
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "addresses": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Reload failed"
           }
         }
       }
