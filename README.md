@@ -21,6 +21,12 @@ DEFAULT_VC_POLICIES=expired,signature,revoked-status-list,not-before
 ENABLE_LOGS=1
 MODE_PROXY=1
 MODE_PS=1
+PORT=3000
+# Optional ocean-node compatible fallback used only when PORT is not set.
+HTTP_API_PORT=3000
+# Optional: enable HTTPS directly in policy-server when both cert and key are set.
+HTTP_CERT_PATH=/usr/src/app/certs/cert.pem
+HTTP_KEY_PATH=/usr/src/app/certs/key.pem
 # Optional: if set, POST / requires X-API-Key to match this value
 POLICY_SERVER_API_KEY=API_KEY_EXAMPLE
 # Optional: if set, admin maintenance endpoints require this X-API-Key
@@ -33,6 +39,27 @@ POLICY_SERVER_NODE_ACCESS_LIST_URL=https://example.com/trustedNodes
 # If this is empty or unset, consumer access-list authorization is disabled.
 POLICY_SERVER_CONSUMER_ACCESS_LIST=0x7777777777777777777777777777777777777777,0x8888888888888888888888888888888888888888
 POLICY_SERVER_CONSUMER_ACCESS_LIST_URL=https://example.com/trustedConsumers
+```
+
+### HTTP/HTTPS listener
+
+Policy Server listens on `PORT`, then `HTTP_API_PORT`, then `3000` by default.
+
+By default it starts HTTP, which remains compatible with reverse proxies and TLS offload through nginx, Traefik, load balancers, Kubernetes ingress, or similar infrastructure. Direct HTTPS is optional: set both `HTTP_CERT_PATH` and `HTTP_KEY_PATH` to certificate and private key files inside the container or host. If only one TLS file path is configured, Policy Server logs a warning and starts HTTP. If both TLS file paths are configured but a certificate or private key cannot be read, startup fails instead of silently serving HTTP.
+
+Docker deployments can mount certificates read-only:
+
+```yaml
+services:
+  policy-server:
+    image: oceanenterprise/policy-server:latest
+    env_file:
+      - .env
+    ports:
+      - "8001:3000"
+    volumes:
+      - ./certs/cert.pem:/usr/src/app/certs/cert.pem:ro
+      - ./certs/key.pem:/usr/src/app/certs/key.pem:ro
 ```
 
 1. Start the Docker container:
@@ -1458,6 +1485,11 @@ LOCAL_PORT=8100
 CONTAINER_PORT=8100
 
 PORT=8100
+# Optional ocean-node compatible fallback when PORT is not set.
+HTTP_API_PORT=8100
+# Optional direct HTTPS. Reverse proxy TLS offload remains supported without these.
+HTTP_CERT_PATH=/usr/src/app/certs/cert.pem
+HTTP_KEY_PATH=/usr/src/app/certs/key.pem
 AUTH_TYPE=waltid
 OCEAN_NODE_URL=http://ocean-node-vm1.oceanenterprise.io:8000
 WALTID_VERIFIER_URL=https://verifier.demo.walt.id
