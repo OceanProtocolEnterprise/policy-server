@@ -22,8 +22,6 @@ ENABLE_LOGS=1
 MODE_PROXY=1
 MODE_PS=1
 PORT=3000
-# Optional ocean-node compatible fallback used only when PORT is not set.
-HTTP_API_PORT=3000
 # Optional: enable HTTPS directly in policy-server when both cert and key are set.
 HTTP_CERT_PATH=/usr/src/app/certs/cert.pem
 HTTP_KEY_PATH=/usr/src/app/certs/key.pem
@@ -1464,8 +1462,6 @@ LOCAL_PORT=8100
 CONTAINER_PORT=8100
 
 PORT=8100
-# Optional ocean-node compatible fallback when PORT is not set.
-HTTP_API_PORT=8100
 # Optional direct HTTPS. Reverse proxy TLS offload remains supported without these.
 HTTP_CERT_PATH=/usr/src/app/certs/cert.pem
 HTTP_KEY_PATH=/usr/src/app/certs/key.pem

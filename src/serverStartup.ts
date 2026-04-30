@@ -9,7 +9,7 @@ export interface TlsPaths {
 }
 
 export function getServerPort(env: NodeJS.ProcessEnv = process.env): string {
-  return env.PORT || env.HTTP_API_PORT || '3000'
+  return env.PORT || '3000'
 }
 
 export function getTlsPaths(env: NodeJS.ProcessEnv = process.env): TlsPaths {
