@@ -55,5 +55,36 @@
     "sinon": "^19.0.2",
     "supertest": "^7.0.0",
     "typescript": "^5.6.3"
+  },
+  "overrides": {
+    "diff": "8.0.4",
+    "serialize-javascript": "7.0.5",
+    "@typescript-eslint/typescript-estree": {
+      "minimatch": "9.0.9"
+    },
+    "@eslint/eslintrc": {
+      "minimatch": "3.1.5"
+    },
+    "@humanwhocodes/config-array": {
+      "minimatch": "3.1.5"
+    },
+    "eslint": {
+      "minimatch": "3.1.5"
+    },
+    "eslint-plugin-import": {
+      "minimatch": "3.1.5"
+    },
+    "eslint-plugin-n": {
+      "minimatch": "3.1.5"
+    },
+    "eslint-plugin-node": {
+      "minimatch": "3.1.5"
+    },
+    "eslint-plugin-react": {
+      "minimatch": "3.1.5"
+    },
+    "glob@7.2.3": {
+      "minimatch": "3.1.5"
+    }
   }
 }
