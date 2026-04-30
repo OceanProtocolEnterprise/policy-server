@@ -41,27 +41,6 @@ POLICY_SERVER_CONSUMER_ACCESS_LIST=0x7777777777777777777777777777777777777777,0x
 POLICY_SERVER_CONSUMER_ACCESS_LIST_URL=https://example.com/trustedConsumers
 ```
 
-### HTTP/HTTPS listener
-
-Policy Server listens on `PORT`, then `HTTP_API_PORT`, then `3000` by default.
-
-By default it starts HTTP, which remains compatible with reverse proxies and TLS offload through nginx, Traefik, load balancers, Kubernetes ingress, or similar infrastructure. Direct HTTPS is optional: set both `HTTP_CERT_PATH` and `HTTP_KEY_PATH` to certificate and private key files inside the container or host. If only one TLS file path is configured, Policy Server logs a warning and starts HTTP. If both TLS file paths are configured but a certificate or private key cannot be read, startup fails instead of silently serving HTTP.
-
-Docker deployments can mount certificates read-only:
-
-```yaml
-services:
-  policy-server:
-    image: oceanenterprise/policy-server:latest
-    env_file:
-      - .env
-    ports:
-      - "8001:3000"
-    volumes:
-      - ./certs/cert.pem:/usr/src/app/certs/cert.pem:ro
-      - ./certs/key.pem:/usr/src/app/certs/key.pem:ro
-```
-
 1. Start the Docker container:
 
    ```bash
