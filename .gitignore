@@ -150,6 +150,8 @@ html-report.html
 .wallet.out
 # environment
 .env
+certs/cert.pem
+certs/key.pem
 
 # databases
 *.sqlite
