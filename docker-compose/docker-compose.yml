@@ -8,3 +8,5 @@ services:
       - .env
     ports:
       - "8001:3000"
+    volumes:
+      - ../certs:/etc/ssl/certs:ro
