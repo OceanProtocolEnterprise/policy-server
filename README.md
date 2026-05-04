@@ -21,6 +21,10 @@ DEFAULT_VC_POLICIES=expired,signature,revoked-status-list,not-before
 ENABLE_LOGS=1
 MODE_PROXY=1
 MODE_PS=1
+PORT=3000
+# Optional: enable HTTPS directly in policy-server when both cert and key are set.
+HTTP_CERT_PATH=/usr/src/app/certs/cert.pem
+HTTP_KEY_PATH=/usr/src/app/certs/key.pem
 # Optional: if set, POST / requires X-API-Key to match this value
 POLICY_SERVER_API_KEY=API_KEY_EXAMPLE
 # Optional: if set, admin maintenance endpoints require this X-API-Key
@@ -1458,6 +1462,9 @@ LOCAL_PORT=8100
 CONTAINER_PORT=8100
 
 PORT=8100
+# Optional direct HTTPS. Reverse proxy TLS offload remains supported without these.
+HTTP_CERT_PATH=/usr/src/app/certs/cert.pem
+HTTP_KEY_PATH=/usr/src/app/certs/key.pem
 AUTH_TYPE=waltid
 OCEAN_NODE_URL=http://ocean-node-vm1.oceanenterprise.io:8000
 WALTID_VERIFIER_URL=https://verifier.demo.walt.id

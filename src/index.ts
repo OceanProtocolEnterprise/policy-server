@@ -13,6 +13,7 @@ import path from 'path'
 import { createRequire } from 'module'
 import { fileURLToPath } from 'url'
 import { adminApiKeyAuth, policyServerApiKeyAuth } from './utils/auth.js'
+import { startPolicyServer } from './serverStartup.js'
 import {
   EnvConsumerAccessListStore,
   EnvNodeAccessListStore,
@@ -162,8 +163,5 @@ const currentModulePath = fileURLToPath(import.meta.url)
 const entrypointPath = process.argv[1] ? path.resolve(process.argv[1]) : ''
 
 if (entrypointPath === currentModulePath) {
-  const PORT = process.env.PORT || 3000
-  app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`)
-  })
+  startPolicyServer(app)
 }
