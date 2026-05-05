@@ -56,6 +56,22 @@ function startHttpServer(app: Express, port: string): Server {
   })
 }
 
+function startHttpsServer(
+  app: Express,
+  port: string,
+  tlsOptions: TlsOptions
+): Server | null {
+  try {
+    return https.createServer(tlsOptions, app).listen(port, () => {
+      console.log(`HTTPS server is running on port ${port}`)
+    })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error'
+    console.warn(`Unable to start HTTPS server: ${message}. Starting HTTP server.`)
+    return null
+  }
+}
+
 export function startPolicyServer(app: Express): Server {
   const port = getServerPort()
   const tlsPaths = getTlsPaths()
@@ -64,9 +80,10 @@ export function startPolicyServer(app: Express): Server {
   if (certPath && keyPath) {
     const tlsOptions = getTlsOptions(tlsPaths)
     if (tlsOptions) {
-      return https.createServer(tlsOptions, app).listen(port, () => {
-        console.log(`HTTPS server is running on port ${port}`)
-      })
+      const httpsServer = startHttpsServer(app, port, tlsOptions)
+      if (httpsServer) {
+        return httpsServer
+      }
     }
   }
 
