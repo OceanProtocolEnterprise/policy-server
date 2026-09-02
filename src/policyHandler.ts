@@ -5,6 +5,14 @@ export class PolicyHandler {
   // eslint-disable-next-line no-undef
   [key: string]: any
 
+  public getOpaServerUrl(): PolicyRequestResponse {
+    return {
+      success: true,
+      message: process.env.OPA_SERVER ?? null,
+      httpStatus: 200
+    }
+  }
+
   async execute(
     policyRequestPayload: PolicyRequestPayload
   ): Promise<PolicyRequestResponse> {

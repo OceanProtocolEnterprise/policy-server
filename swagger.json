@@ -40,6 +40,7 @@
                       "newDDO",
                       "updateDDO",
                       "validateDDO",
+                      "getOpaServerUrl",
                       "passthrough"
                     ],
                     "description": "Type of policy action to perform"
@@ -1189,6 +1190,13 @@
                     "chainId": 1,
                     "txId": "0x123",
                     "eventRaw": "raw event data"
+                  }
+                },
+                "getOpaServerUrl": {
+                  "summary": "Get the configured OPA server URL",
+                  "value": {
+                    "action": "getOpaServerUrl",
+                    "nodeAddress": "0x1111111111111111111111111111111111111111"
                   }
                 },
                 "passthrough": {
