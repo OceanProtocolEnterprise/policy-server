@@ -22,6 +22,8 @@ ENABLE_LOGS=1
 MODE_PROXY=1
 MODE_PS=1
 PORT=3000
+# OPA server URL returned by the getOpaServerUrl action
+OPA_SERVER=https://opa.example.com
 # Optional: enable HTTPS directly in policy-server when both cert and key are set.
 HTTP_CERT_PATH=/usr/src/app/certs/cert.pem
 HTTP_KEY_PATH=/usr/src/app/certs/key.pem
@@ -92,6 +94,7 @@ The reload endpoints rebuild the in-memory lists from the current env values plu
 - `newDDO`
 - `updateDDO`
 - `validateDDO`
+- `getOpaServerUrl`
 - `passthrough`
 
 ## 1) initiate
@@ -1411,7 +1414,35 @@ Policy Server also replaces `response_uri` with `WALTID_VERIFY_RESPONSE_REDIRECT
 }
 ```
 
-## 12 passthrough
+## 12 getOpaServerUrl
+
+Returns the OPA server URL configured for this Policy Server, or `null` when
+`OPA_SERVER` is not configured.
+
+### PolicyServer Endpoint Example
+
+**Endpoint**: `http://localhost:3000/`
+
+### PolicyServer Expected Payload Example
+
+```json
+{
+  "action": "getOpaServerUrl",
+  "nodeAddress": "0x1111111111111111111111111111111111111111"
+}
+```
+
+### PolicyServer Response Example
+
+```json
+{
+  "success": true,
+  "message": "https://opa.example.com",
+  "httpStatus": 200
+}
+```
+
+## 13 passthrough
 
 ### PolicyServer Endpoint Example
 
@@ -1462,6 +1493,8 @@ LOCAL_PORT=8100
 CONTAINER_PORT=8100
 
 PORT=8100
+# OPA server URL returned by the getOpaServerUrl action
+OPA_SERVER=https://opa.example.com
 # Optional direct HTTPS. Reverse proxy TLS offload remains supported without these.
 HTTP_CERT_PATH=/usr/src/app/certs/cert.pem
 HTTP_KEY_PATH=/usr/src/app/certs/key.pem
